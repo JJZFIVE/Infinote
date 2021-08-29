@@ -1,6 +1,5 @@
 import boto3
-from api import User, Entry
-import mongoengine
+from models import User, Entry
 
 # Setup boto3 client
 ACCESS_KEY = "AKIAX6C2X4DBYI5XFIXQ"
@@ -11,20 +10,22 @@ client = boto3.client("s3", aws_access_key_id=ACCESS_KEY,
 
 # FILE PATH: USERID/ENTRYID.mp3
 # Put file into S3
-def put_file(user_id, entry_id):
+def boto3_put_file(user_id, entry_id, data):
     USER_ID = str(User.objects(id=user_id).first().id)
     ENTRY_ID = str(Entry.objects(id=entry_id).first().id)
-    with open("testpodcast.mp3", "rb") as f:
-        data = f.read()
     response = client.put_object(
-        ACL="private", Body=data, Bucket="infinote-audio-files", Key=f"{USER_ID}/{ENTRY_ID}.mp3")
+        ACL="private", Body=data, Bucket="infinote-audio-files", Key=f"{USER_ID}/{ENTRY_ID}")
     print("Put file into S3", response)
+    return response
 
 
-def get_file(key):
+def boto3_get_file(key):
     # Get item from bucket
     response_new = client.get_object(
         Bucket="infinote-audio-files", Key=key)
     data = response_new["Body"].read()
-    with open("testpodcastRETURNED.mp3", "wb") as f:
-        f.write(data)
+    return data
+
+
+def boto3_delete_file(key):
+    client.delete_object(Bucket="infinote-audio-files", Key=key)
