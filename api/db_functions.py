@@ -59,8 +59,9 @@ def change_entry_tags(entry_id, tags, append=False):
     tags = tags.strip()
     tags = tags.split(",")
     print(tags)
-    if tags[-1] != "":
+    if tags[0] != "":
         for tag in tags:
+            tag = tag.strip()
             entry.tags.append(tag)
     entry.save()
     return entry

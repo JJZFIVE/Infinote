@@ -10,6 +10,8 @@ from models import User, Entry, UserForJWTToken
 from db_functions import (create_new_user, search_for_user_by_username, update_user,
                           find_entries_for_user, get_entry, search_for_user_by_id, new_entry, change_entry_tags, delete_entry_tags)
 
+# NEED TO ADD BACK THE AUTH REQUIRED DECORATORS
+
 # Activating virtual environment: source .venv/bin/activate
 # IMPORTANT: HASH PASSWORD BEFORE PASSING INTO CREATE_NEW_USER FUNCTION
 
