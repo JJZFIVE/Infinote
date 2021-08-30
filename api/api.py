@@ -10,8 +10,6 @@ from models import User, Entry, UserForJWTToken
 from db_functions import (create_new_user, search_for_user_by_username, update_user,
                           find_entries_for_user, get_entry, search_for_user_by_id, new_entry, change_entry_tags, delete_entry_tags)
 
-# NEED TO ADD BACK THE AUTH REQUIRED DECORATORS
-
 # Activating virtual environment: source .venv/bin/activate
 # IMPORTANT: HASH PASSWORD BEFORE PASSING INTO CREATE_NEW_USER FUNCTION
 
@@ -55,13 +53,10 @@ def create_jwt_token(user):
 
 # Api Routes
 @app.route("/api/protected/delete_user", methods=["POST"])
-@flask_praetorian.roles_required("admin")
+@flask_praetorian.auth_required
 def delete_user():
     req = flask.request.get_json(force=True)
     username = req.get("username", None)
-    user = User.objects(username=username).first()
-    if "admin" in user.roles:
-        return {"message": f"You can't delete the {username} account"}, 200
     del_user = User.objects(username=username).first()
     if del_user:
         del_user.delete()
@@ -103,6 +98,7 @@ def login():
 
 
 @app.route("/api/refresh", methods=["POST"])
+@flask_praetorian.auth_required
 def refresh():
     print("refresh request")
     old_token = flask.request.get_data()
@@ -112,7 +108,7 @@ def refresh():
 
 
 @app.route("/api/upload-entry", methods=["POST"])
-# @flask_praetorian.auth_required
+@flask_praetorian.auth_required
 def upload_entry():
     username = flask.request.form.get('username')
     print("username: ", username)
@@ -147,6 +143,7 @@ def upload_entry():
 
 
 @app.route("/api/get-entries", methods=["POST"])
+@flask_praetorian.auth_required
 def get_entries():
     # UNFINISHED
     # This DOES NOT PULL S3 bucket info. Only Mongo info. Only first 10? 20? 50? Think # of items/page
@@ -170,6 +167,7 @@ def get_entries():
 
 
 @ app.route("/api/delete-entry", methods=["DELETE"])
+@flask_praetorian.auth_required
 def delete_entry():
     # Takes entry id, which is stored in id tag of a delete button on the screen
     # Must delete from s3 first, then from Mongo

@@ -6,7 +6,7 @@ import {
     Redirect,
     Link
   } from "react-router-dom";
-
+import { authFetch } from './auth';
 
 // Component
 export function DeleteEntry(props) {
@@ -19,7 +19,7 @@ export function DeleteEntry(props) {
     function onDeleteEntry() {
       if(entryId !== "" && props.username !== "") {
         const opts = {"username": props.username, "entryId": entryId}
-        fetch("/api/delete-entry", {
+        authFetch("/api/delete-entry", {
           method: "delete",
           body: JSON.stringify(opts)
         }).then(r => r.json()).then(r => console.log(r)).catch(error => console.log(error));
@@ -51,7 +51,7 @@ export function ListEntries(props) {
       let opts = {
           'username': props.username,
         }
-      fetch("/api/get-entries", {
+      authFetch("/api/get-entries", {
           method: "post",
           body: JSON.stringify(opts)
       })

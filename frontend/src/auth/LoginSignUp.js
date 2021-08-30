@@ -3,20 +3,24 @@ import {login, useAuth, logout, authFetch } from './index';
 
 // Component
 export function SignUp(props) {
-    const [username, setUsername] = useState('')
-    const [password1, setPassword1] = useState('')
-    const [password2, setPassword2] = useState('')
+    const [firstname, setFirstname] = useState("");
+    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState('');
+    const [password1, setPassword1] = useState('');
+    const [password2, setPassword2] = useState('');
     const [logged] = useAuth()
   
     const onSubmitClick = (e)=>{
       e.preventDefault()
       console.log("You pressed sign up", username, password1)
-      if (username === '' || password1 === '' || password2 === '') {
+      if (firstname === '' || email === '' || username === '' || password1 === '' || password2 === '') {
         console.log("Input fields cannot be blank")
         return null
       }
       if (password1 === password2) {
         let opts = {
+          'firstname': firstname,
+          'email': email,
           'username': username,
           'password': password1
         }
@@ -37,7 +41,7 @@ export function SignUp(props) {
                 if (token.access_token){
                   login(token);
                   console.log(token);
-                  props.func(username);
+                  props.usernameFunc(username);
                 } else {
                   console.log("Please type in correct username/password")
                 }
@@ -49,6 +53,13 @@ export function SignUp(props) {
         console.log("PASSWORDS DO NOT MATCH")
       }
     }
+      const handleFirstnameChange = (e) => {
+        setFirstname(e.target.value)
+      }
+
+      const handleEmailChange = (e) => {
+        setEmail(e.target.value)
+      }
   
       const handleUsernameChange = (e) => {
         setUsername(e.target.value)
@@ -64,8 +75,22 @@ export function SignUp(props) {
     
       return (
         <div>
-          {!logged? <form action="#">
+          {!logged? <div><form action="#">
           <h2>Sign Up</h2>
+            <div>
+              <input type="text" 
+                placeholder="First Name" 
+                onChange={handleFirstnameChange}
+                value={firstname} 
+              />
+            </div>
+            <div>
+              <input type="text" 
+                placeholder="Email" 
+                onChange={handleEmailChange}
+                value={email} 
+              />
+            </div>
             <div>
               <input type="text" 
                 placeholder="Username" 
@@ -93,6 +118,10 @@ export function SignUp(props) {
               Sign Up Now
             </button>
           </form>
+          <div>
+            <button onClick={() => props.showLoginFunc(true)}>Go to Login</button>
+          </div>
+          </div>
           : <div />}
         </div>
       )
@@ -105,9 +134,8 @@ export function SignUp(props) {
 
 // Component
 export function Login(props) {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [logged] = useAuth();
 
   const onSubmitClick = (e)=>{
@@ -125,12 +153,12 @@ export function Login(props) {
     }).then(r => r.json())
       .then(token => {
         if (token.access_token){
-          login(token)
-          console.log(token)     
-          props.func(username)     
+          login(token);
+          console.log(token);
+          props.usernameFunc(username);
         }
         else {
-          console.log("Please type in correct username/password")
+          console.log("Please type in correct username/password");
         }
       })    
   }
@@ -145,8 +173,9 @@ export function Login(props) {
 
   return (
     <div>
-      <h2>Login</h2>
-      {!logged? <form action="#">
+      {!logged? <div>
+        <h2>Login</h2>
+        <form action="#">
         <div>
           <input type="text" 
             placeholder="Username" 
@@ -166,6 +195,10 @@ export function Login(props) {
           Login Now
         </button>
       </form>
+      <div>
+      < button onClick={() => props.showLoginFunc(false)}>Go to Sign Up</button>
+      </div>
+      </div>
       : <button onClick={() => logout()}>Logout</button>}
     </div>
   )

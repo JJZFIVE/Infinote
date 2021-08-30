@@ -11,25 +11,43 @@ import Upload from './Upload.js';
 import EntryMain from './Entries.js';
 import {login, useAuth, logout, authFetch } from './auth';
 import { Login, SignUp } from './auth/LoginSignUp';
-// Change most fetch requests to authfetch
 
+// Component
+function Home(props) {
+  //const [logged, setLogged] = useState(null);
+  const [username, setUsername] = useState("");
+  const [showLogin, setShowLogin] = useState(true);
+  const [logged] = useAuth();
 
-function Home() {
+  useEffect(() => {
+    props.usernameFunc(username);
+  }, [username])
+
+  function usernameCallback(data) {
+    setUsername(data);
+  }
+
+  function showLoginCallback(data) {
+    setShowLogin(data);
+  }
   return (
     <div>
       <h3>Home</h3>
+      {showLogin ? 
+      <Login usernameFunc={usernameCallback} showLoginFunc={showLoginCallback} /> 
+      : <SignUp usernameFunc={usernameCallback} showLoginFunc={showLoginCallback} />}
     </div>
   )
 }
 
+// Component
 function Navbar(props) {
-  const [logged, setLogged] = useState(false);
-
+  const [logged] = useAuth();
 
   return (
     <nav>
+      {logged ? 
       <ul>
-          {logged ? <li><Link></Link></li> : <h1></h1>}
           <li>
             <Link to="/upload">Upload</Link>
           </li>
@@ -39,7 +57,9 @@ function Navbar(props) {
           <li>
             <Link to="/settings">Settings</Link>
           </li>
-        </ul>
+        </ul> 
+        : <div></div>}
+      
     </nav>
   )
 }
@@ -56,6 +76,7 @@ function Settings() {
 // App Component
 function App() {
   const [username, setUsername] = useState("");
+  const [logged] = useAuth();
   
   function usernameCallback(data) {
     setUsername(data);
@@ -67,10 +88,10 @@ function App() {
         <Navbar />
         <Switch>
           <Route exact path="/">
-            <Home />
+            <Home usernameFunc={usernameCallback} />
           </Route>
           <Route path="/upload">
-            <Upload username={username} func={usernameCallback}/>
+            <Upload username={username}/>
           </Route>
           <Route path="/entries">
             <EntryMain username={username}/>
