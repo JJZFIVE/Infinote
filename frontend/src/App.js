@@ -11,6 +11,7 @@ import Upload from './Upload.js';
 import EntryMain from './Entries.js';
 import {login, useAuth, logout, authFetch } from './auth';
 import { Login, SignUp } from './auth/LoginSignUp';
+import Layout from './Layout.js';
 
 // Component
 function Home(props) {
@@ -41,30 +42,6 @@ function Home(props) {
   )
 }
 
-// Component
-function Navbar(props) {
-  const [logged] = useAuth();
-
-  return (
-    <nav>
-      {logged ? 
-      <ul>
-          <li>
-            <Link to="/upload">Upload</Link>
-          </li>
-          <li>
-            <Link to="/entries">Entries</Link>
-          </li>
-          <li>
-            <Link to="/settings">Settings</Link>
-          </li>
-        </ul> 
-        : <div></div>}
-      
-    </nav>
-  )
-}
-
 function Settings() {
   return (
     <div>
@@ -86,21 +63,22 @@ function App() {
   return (
     <div className="App">
       <Router>
-        <Navbar />
-        <Switch>
-          <Route exact path="/">
-            <Home usernameFunc={usernameCallback} />
-          </Route>
-          <Route path="/upload">
-            <Upload username={username}/>
-          </Route>
-          <Route path="/entries">
-            <EntryMain username={username}/>
-          </Route>
-          <Route path="/settings">
-            <Settings username={username}/>
-          </Route>
-        </Switch>
+        <Layout username={username}>
+          <Switch>
+            <Route exact path="/">
+              <Home usernameFunc={usernameCallback} />
+            </Route>
+            <Route path="/upload">
+              <Upload username={username}/>
+            </Route>
+            <Route path="/entries">
+              <EntryMain username={username}/>
+            </Route>
+            <Route path="/settings">
+              <Settings username={username}/>
+            </Route>
+          </Switch>
+        </Layout>
       </Router>
     </div>
 
