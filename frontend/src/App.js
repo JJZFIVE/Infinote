@@ -14,6 +14,7 @@ import { Login, SignUp } from './auth/LoginSignUp';
 
 // Component
 function Home(props) {
+
   //const [logged, setLogged] = useState(null);
   const [username, setUsername] = useState("");
   const [showLogin, setShowLogin] = useState(true);
