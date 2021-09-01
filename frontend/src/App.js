@@ -2,19 +2,17 @@ import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
-  Redirect,
-  Link
+  Route
 } from "react-router-dom";
-import { DeleteEntry, ListEntries } from './Entries.js';
 import Upload from './Upload.js';
 import EntryMain from './Entries.js';
-import {login, useAuth, logout, authFetch } from './auth';
+import { useAuth } from './auth';
 import { Login, SignUp } from './auth/LoginSignUp';
 import Layout from './Layout.js';
+import ViewEntry from './ViewEntry.js';
 
 // Component
-function Home(props) {
+export function Home(props) {
 
   //const [logged, setLogged] = useState(null);
   const [username, setUsername] = useState("");
@@ -63,7 +61,7 @@ function App() {
   return (
     <div className="App">
       <Router>
-        <Layout username={username}>
+        <Layout username={username} logged={logged}>
           <Switch>
             <Route exact path="/">
               <Home usernameFunc={usernameCallback} />
@@ -71,11 +69,14 @@ function App() {
             <Route path="/upload">
               <Upload username={username}/>
             </Route>
-            <Route path="/entries">
+            <Route exact path="/entries">
               <EntryMain username={username}/>
             </Route>
             <Route path="/settings">
               <Settings username={username}/>
+            </Route>
+            <Route path="/entries/:entry_id">
+              <ViewEntry />
             </Route>
           </Switch>
         </Layout>

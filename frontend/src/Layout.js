@@ -11,6 +11,7 @@ import { AddCircleOutlineOutlined, SubjectOutlined } from "@material-ui/icons";
 import SettingsIcon from '@material-ui/icons/Settings';
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
+import Button from "@material-ui/core/Button";
 
 
 const drawerWidth = 240;
@@ -36,10 +37,13 @@ const useStyles = makeStyles((theme) => {
     appbar: {
         width: `calc(100% - ${drawerWidth}px)`
     },
-    toolbar: theme.mixins.toolbar
+    toolbar: theme.mixins.toolbar,
+    test: {
+        flexGrow: 1,
+      },
 }});
 
-export default function Layout({ children, username }) {
+export default function Layout({ children, username, logged }) {
     const classes = useStyles();
     const history = useHistory();
     const location = useLocation();
@@ -67,7 +71,11 @@ export default function Layout({ children, username }) {
             className={classes.appbar}
             position="fixed">
                 <Toolbar>
-                    Welcome, {username}
+                    <Typography variant="h6" className={classes.test} >Welcome, {username}</Typography>
+                    {logged ? 
+                    <Button size="large" color="inherit" onClick={() => history.push("/")}>Log Out</Button> 
+                    : 
+                    <Button size="large" color="inherit" onClick={() => history.push("/")}>Login</Button>}
                 </Toolbar>
             </AppBar>
 
