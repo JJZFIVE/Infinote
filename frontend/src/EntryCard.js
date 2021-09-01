@@ -1,20 +1,14 @@
 import React, { useState, useEffect  } from 'react';
 import {
     BrowserRouter as Router,
-    Switch,
-    Route,
-    Redirect,
-    Link,
     useHistory
   } from "react-router-dom";
-import { makeStyles, Typography } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core'
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import { DeleteOutlined } from '@material-ui/icons';
 import { IconButton } from '@material-ui/core';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import Upload from "./Upload.js";
 import ButtonBase from '@material-ui/core/ButtonBase';
 
 const useStyles = makeStyles((theme) => {

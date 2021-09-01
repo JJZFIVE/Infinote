@@ -76,7 +76,7 @@ function App() {
               <Settings username={username}/>
             </Route>
             <Route path="/entries/:entry_id">
-              <ViewEntry />
+              <ViewEntry username={username}/>
             </Route>
           </Switch>
         </Layout>

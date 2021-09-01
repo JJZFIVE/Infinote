@@ -142,6 +142,14 @@ def upload_entry():
     """
 
 
+@app.route("/get-entry-file/<username>/<entry_id>")
+@flask_praetorian.auth_required
+def get_entry_file(username, entry_id):
+    user_id = search_for_user_by_username(username).id
+    data = boto3_get_file(key=f"{user_id}/{entry_id}")
+    return {"test": str(data)}
+
+
 @app.route("/api/get-entries", methods=["POST"])
 @flask_praetorian.auth_required
 def get_entries():
