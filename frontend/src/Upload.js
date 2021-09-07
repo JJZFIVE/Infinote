@@ -17,6 +17,7 @@ import AddIcon from '@material-ui/icons/Add';
 import DoneIcon from '@material-ui/icons/Done';
 import ClearIcon from '@material-ui/icons/Clear';
 import TextField from '@material-ui/core/TextField';
+import { LeakAddTwoTone } from '@material-ui/icons';
 
 const useStyles = makeStyles({
   btn: {
@@ -99,6 +100,36 @@ function Upload(props) {
     setMyFile(null);
   }
 
+  function fileUploadTest() {
+      const reader = new FileReader();
+      if (myFile){
+        reader.readAsDataURL(myFile);
+        reader.onload = function () {
+          console.log(reader.result);
+          let text = reader.result;
+          if (props.username !== '' && filename !== '' && myFile !== null){
+            authFetch(`/api/upload-entry-test/${props.username}/${filename}`, {
+              method: "POST",
+              body: JSON.stringify({"file": text})
+            }).then(r => r.json()).then(r => console.log(r)).catch(error => console.log(error));
+            setMyFile(null);
+            setFilename("");
+            setTags("");
+            setFileUploaded(true);
+          }
+        };
+        reader.onerror = function (error) {
+          console.log('Error: ', error);
+        };
+        
+      }
+      else{
+        console.log("Failed")
+      }
+      
+      
+  }
+
   return (
     <div>
           {myFile == null ? 
@@ -155,7 +186,7 @@ function Upload(props) {
             />
           </form>
 
-          <Button onClick={onFileUpload} startIcon={<CloudUploadIcon />} variant="contained" color="primary">Upload</Button>
+          <Button onClick={fileUploadTest} startIcon={<CloudUploadIcon />} variant="contained" color="primary">Upload</Button>
       <div>
         <h3 id="warning-text"></h3>
         {fileUploaded ? <Typography variant="h5" color="primary">File Successfully Uploaded!</Typography> : <div />}
