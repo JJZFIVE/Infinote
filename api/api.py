@@ -28,17 +28,6 @@ mongoengine.connect(host=DB_URI)
 guard.init_app(app=app, user_class=User)
 flask_cors.CORS(app)
 
-# Initialize database with jjzfive as the admin
-with app.app_context():
-    if User.objects(username="jjzfive").count() < 1:
-        create_new_user(
-            firstname="Joe",
-            email="jjzfive@gmail.com",
-            username="jjzfive",
-            password=guard.hash_password("password"),
-            roles="admin",
-        )
-
 # Way eaiser to have this JWT token function here
 
 
@@ -54,11 +43,9 @@ def create_jwt_token(user):
 
 
 # Api Routes
-@app.route("/api/protected/delete_user", methods=["POST"])
+@app.route("/api/delete-user/<username>", methods=["POST"])
 @flask_praetorian.auth_required
-def delete_user():
-    req = flask.request.get_json(force=True)
-    username = req.get("username", None)
+def delete_user(username):
     del_user = User.objects(username=username).first()
     if del_user:
         del_user.delete()
@@ -183,10 +170,29 @@ def upload_entry_test(username, filename):
     # Put the file into S3 bucket
     response = boto3_put_file(user_id, entry_id, uploaded_file)
     status_code = response["ResponseMetadata"]["HTTPStatusCode"]
-    print("YAYAYAYYAYAY:", status_code)
     return {"response": status_code}, status_code
 
 
-# Run the example
+@app.route("/get-user-email/<username>")
+@flask_praetorian.auth_required
+def get_user_settings(username):
+    user = search_for_user_by_username(username)
+    email = user.email
+    firstname = user.firstname
+    return {"email": email, "firstname": firstname}, 200
+
+
+@app.route("/change-password/<username>", methods=["POST"])
+@flask_praetorian.auth_required
+def change_password(username):
+    data = flask.request.get_json(force=True)
+    password = guard.hash_password(data["password"])
+    user = search_for_user_by_username(username)
+    # remember to hash new password
+    user.password = password
+    user.save()
+    return {"message": "Passsword changed successfully"}, 200
+
+    # Run the example
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -15,7 +15,6 @@ export function SignUp(props) {
   
     const onSubmitClick = (e)=>{
       e.preventDefault()
-      console.log("You pressed sign up", username, password1)
       if (firstname === '' || email === '' || username === '' || password1 === '' || password2 === '') {
         console.log("Input fields cannot be blank")
         return null
