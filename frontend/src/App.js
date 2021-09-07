@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
-  Redirect,
-  Link
+  Route
 } from "react-router-dom";
-import { DeleteEntry, ListEntries } from './Entries.js';
 import Upload from './Upload.js';
 import EntryMain from './Entries.js';
-import {login, useAuth, logout, authFetch } from './auth';
+import { useAuth } from './auth';
 import { Login, SignUp } from './auth/LoginSignUp';
+import Layout from './Layout.js';
+import ViewEntry from './ViewEntry.js';
 
 // Component
-function Home(props) {
+export function Home(props) {
+
   //const [logged, setLogged] = useState(null);
   const [username, setUsername] = useState("");
   const [showLogin, setShowLogin] = useState(true);
@@ -40,30 +40,6 @@ function Home(props) {
   )
 }
 
-// Component
-function Navbar(props) {
-  const [logged] = useAuth();
-
-  return (
-    <nav>
-      {logged ? 
-      <ul>
-          <li>
-            <Link to="/upload">Upload</Link>
-          </li>
-          <li>
-            <Link to="/entries">Entries</Link>
-          </li>
-          <li>
-            <Link to="/settings">Settings</Link>
-          </li>
-        </ul> 
-        : <div></div>}
-      
-    </nav>
-  )
-}
-
 function Settings() {
   return (
     <div>
@@ -85,21 +61,25 @@ function App() {
   return (
     <div className="App">
       <Router>
-        <Navbar />
-        <Switch>
-          <Route exact path="/">
-            <Home usernameFunc={usernameCallback} />
-          </Route>
-          <Route path="/upload">
-            <Upload username={username}/>
-          </Route>
-          <Route path="/entries">
-            <EntryMain username={username}/>
-          </Route>
-          <Route path="/settings">
-            <Settings username={username}/>
-          </Route>
-        </Switch>
+        <Layout username={username} logged={logged}>
+          <Switch>
+            <Route exact path="/">
+              <Home usernameFunc={usernameCallback} />
+            </Route>
+            <Route path="/upload">
+              <Upload username={username}/>
+            </Route>
+            <Route exact path="/entries">
+              <EntryMain username={username}/>
+            </Route>
+            <Route path="/settings">
+              <Settings username={username}/>
+            </Route>
+            <Route path="/entries/:entry_id">
+              <ViewEntry username={username}/>
+            </Route>
+          </Switch>
+        </Layout>
       </Router>
     </div>
 

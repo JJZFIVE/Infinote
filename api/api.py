@@ -10,6 +10,8 @@ from models import User, Entry, UserForJWTToken
 from db_functions import (create_new_user, search_for_user_by_username, update_user,
                           find_entries_for_user, get_entry, search_for_user_by_id, new_entry, change_entry_tags, delete_entry_tags)
 
+# Passport is a node package API that deals with login/signup stuff. passport-google-oath-2.0
+
 # Activating virtual environment: source .venv/bin/activate
 # IMPORTANT: HASH PASSWORD BEFORE PASSING INTO CREATE_NEW_USER FUNCTION
 
@@ -142,6 +144,17 @@ def upload_entry():
     """
 
 
+@app.route("/get-entry-file/<username>/<entry_id>")
+@flask_praetorian.auth_required
+def get_entry_file(username, entry_id):
+    user_id = search_for_user_by_username(username).id
+    data = boto3_get_file(key=f"{user_id}/{entry_id}")
+    data = str(data)
+    data = data.split("base64,")
+    data = data[1].rstrip("'")
+    return {"test": data}
+
+
 @app.route("/api/get-entries", methods=["POST"])
 @flask_praetorian.auth_required
 def get_entries():
@@ -186,6 +199,27 @@ def delete_entry():
         return {"message": "Entry successfully deleted"}, 200
     else:
         return {"message": "Entry could not be found or deleted"}, 404
+
+
+@app.route("/api/upload-entry-test/<username>/<filename>", methods=["POST"])
+@flask_praetorian.auth_required
+def upload_entry_test(username, filename):
+    # Get the uploaded file in bytes format
+    data = flask.request.get_json(force=True)
+    uploaded_file = data["file"]
+    # Get user id to pass to boto3
+    user_id = search_for_user_by_username(username).id
+    print("user_id: ", user_id)
+    # Must create new entry before upload to generate entry id
+    entry = new_entry(user_id, filename)
+    entry_id = entry.id
+    # Append tags, if any
+    ######change_entry_tags(entry_id, tags, append=False)
+    # Put the file into S3 bucket
+    response = boto3_put_file(user_id, entry_id, uploaded_file)
+    status_code = response["ResponseMetadata"]["HTTPStatusCode"]
+    print("YAYAYAYYAYAY:", status_code)
+    return {"response": status_code}, status_code
 
 
 # Run the example

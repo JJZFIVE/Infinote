@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Redirect,
-    Link
-  } from "react-router-dom";
 import { authFetch } from './auth';
+import { Container, Grid, makeStyles, Typography } from '@material-ui/core';
+import EntryCard from "./EntryCard.js";
+
+const useStyles = makeStyles({
+
+})
 
 // Component
 export function DeleteEntry(props) {
+    const classes = useStyles();
+
     const [entryId, setEntryId] = useState("");
   
     function onDeleteInputChange(e) {
@@ -39,19 +40,16 @@ export function DeleteEntry(props) {
     )
   }
 
-
-
-
 // Component
-export function ListEntries(props) {
-    const [isLoading, setIsLoading] = useState(true);
+function EntryMain(props) {
     const [entries, setEntries] = useState([]);
-  
-    function updateEntries() {
-      let opts = {
-          'username': props.username,
-        }
+
+    useEffect(() => {
+      const opts = {
+        'username': props.username,
+      }
       authFetch("/api/get-entries", {
+        // Try to change this to get request to url `/api/get-entries/${props.username}`
           method: "post",
           body: JSON.stringify(opts)
       })
@@ -59,41 +57,31 @@ export function ListEntries(props) {
       .then((r) => {
           console.log(r.entries);
           setEntries(r.entries);
-          setIsLoading(false);
-          //props.func(r.notes);
-      }) 
-    }
-    // Turn into useEffect. Modify the [] in the useEffect to add a Hook for when a new entry is added to re-render all of the entries
-  
-    if (isLoading) {
-      return (
-        <div>
-          <br />
-          <button onClick={updateEntries}>Get entries</button> <br />
-          Loading...
-        </div>
-      )
-    }
-    else {
-      return (
-        <div>
-              <button onClick={updateEntries}>Get entries</button>
-              <h1>Entries:</h1>
-              {entries.map(item => (
-              <h3 key={item.id}>{item.name}{item.id}</h3>
-          ))}
-        </div>
-      )
-    }
-  }
+      })
+    }, [])
 
-function EntryMain(props) {
+    const deleteEntry = (entry_id) => {
+      const opts = {"username": props.username, "entryId": entry_id}
+      authFetch("/api/delete-entry", {
+        method: "delete",
+        body: JSON.stringify(opts)
+      }).then(r => r.json()).then(r => console.log(r)).catch(error => console.log(error));
+
+      const newEntries = entries.filter(entry => entry.id != entry_id);
+      setEntries(newEntries);
+    }
 
     return (
-        <div>
-            <DeleteEntry username={props.username} />
-            <ListEntries username={props.username}/>
-        </div>
+      <Container>
+        <Grid container spacing={3}>
+          {entries.map((item) => (
+            <Grid item key={item.id} xs={12} md={6} lg={4}>
+              <EntryCard entry={item} deleteEntry={deleteEntry}/>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+
     )
 }
 
