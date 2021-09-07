@@ -10,49 +10,34 @@ import { useAuth } from './auth';
 import { Login, SignUp } from './auth/LoginSignUp';
 import Layout from './Layout.js';
 import ViewEntry from './ViewEntry.js';
+import Settings from './Settings.js';
 
 // Component
 export function Home(props) {
-
-  //const [logged, setLogged] = useState(null);
-  const [username, setUsername] = useState("");
-  const [showLogin, setShowLogin] = useState(true);
   const [logged] = useAuth();
 
-  useEffect(() => {
-    props.usernameFunc(username);
-  }, [username])
-
-  function usernameCallback(data) {
-    setUsername(data);
-  }
-
-  function showLoginCallback(data) {
-    setShowLogin(data);
-  }
   return (
     <div>
       <h3>Home</h3>
-      {showLogin ? 
-      <Login usernameFunc={usernameCallback} showLoginFunc={showLoginCallback} /> 
-      : <SignUp usernameFunc={usernameCallback} showLoginFunc={showLoginCallback} />}
+      <h4>I'm gonna put all of my amazing homepage stuff right here</h4>
     </div>
   )
 }
 
-function Settings() {
-  return (
-    <div>
-      <h3>Settings</h3>
-    </div>
-  )
-}
 
 
 // App Component
 function App() {
   const [username, setUsername] = useState("");
   const [logged] = useAuth();
+
+  useEffect(() => {
+    const loggedInUser = localStorage.getItem("username");
+    if (loggedInUser) {
+      setUsername(loggedInUser);
+      console.log("Username:", loggedInUser);
+    }
+  }, [username]);
   
   function usernameCallback(data) {
     setUsername(data);
@@ -61,10 +46,16 @@ function App() {
   return (
     <div className="App">
       <Router>
-        <Layout username={username} logged={logged}>
+        <Layout username={username} logged={logged} usernameFunc={usernameCallback}>
           <Switch>
             <Route exact path="/">
               <Home usernameFunc={usernameCallback} />
+            </Route>
+            <Route exact path="/login">
+              <Login username={username} usernameFunc={usernameCallback}></Login>
+            </Route>
+            <Route exact path="/sign-up">
+              <SignUp username={username} usernameFunc={usernameCallback}></SignUp>
             </Route>
             <Route path="/upload">
               <Upload username={username}/>

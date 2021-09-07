@@ -1,5 +1,7 @@
-import React, { useState, useEffect, props } from 'react';
-import {login, useAuth, logout, authFetch } from './index';
+import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import {login, useAuth } from './index';
+
 
 // Component
 export function SignUp(props) {
@@ -8,7 +10,8 @@ export function SignUp(props) {
     const [username, setUsername] = useState('');
     const [password1, setPassword1] = useState('');
     const [password2, setPassword2] = useState('');
-    const [logged] = useAuth()
+    const history = useHistory();
+    const [logged] = useAuth();
   
     const onSubmitClick = (e)=>{
       e.preventDefault()
@@ -42,6 +45,8 @@ export function SignUp(props) {
                   login(token);
                   console.log(token);
                   props.usernameFunc(username);
+                  // Store username in localstorage
+                  localStorage.setItem('username', username);
                 } else {
                   console.log("Please type in correct username/password")
                 }
@@ -119,7 +124,7 @@ export function SignUp(props) {
             </button>
           </form>
           <div>
-            <button onClick={() => props.showLoginFunc(true)}>Go to Login</button>
+            <button onClick={() => history.push("/login")}>Go to Login</button>
           </div>
           </div>
           : <div />}
@@ -136,6 +141,7 @@ export function SignUp(props) {
 export function Login(props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const history = useHistory();
   const [logged] = useAuth();
 
   const onSubmitClick = (e)=>{
@@ -156,6 +162,8 @@ export function Login(props) {
           login(token);
           console.log(token);
           props.usernameFunc(username);
+          // Store username in localstorage
+          localStorage.setItem('username', username);
         }
         else {
           console.log("Please type in correct username/password");
@@ -196,10 +204,10 @@ export function Login(props) {
         </button>
       </form>
       <div>
-      < button onClick={() => props.showLoginFunc(false)}>Go to Sign Up</button>
+      < button onClick={() => history.push("/sign-up")}>Go to Sign Up</button>
       </div>
       </div>
-      : <button onClick={() => logout()}>Logout</button>}
+      : <h3>Welcome to Infinote</h3>}
     </div>
   )
 }

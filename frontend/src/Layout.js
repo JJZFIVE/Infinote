@@ -1,5 +1,6 @@
 import { makeStyles } from '@material-ui/core';
 import React from 'react';
+import { logout } from './auth';
 import { useHistory, useLocation } from 'react-router-dom';
 import Drawer from "@material-ui/core/Drawer";
 import Typography from "@material-ui/core/Typography";
@@ -43,7 +44,7 @@ const useStyles = makeStyles((theme) => {
       },
 }});
 
-export default function Layout({ children, username, logged }) {
+export default function Layout({ children, username, logged, usernameFunc }) {
     const classes = useStyles();
     const history = useHistory();
     const location = useLocation();
@@ -65,20 +66,30 @@ export default function Layout({ children, username, logged }) {
         }
     ];
 
+    // LOG OUT FUNCTION
+    function logMeOut() {
+        history.push("/");
+        logout();
+        usernameFunc("");
+        localStorage.clear();
+    }
+
     return (
         <div className={classes.root}>
             <AppBar
             className={classes.appbar}
             position="fixed">
                 <Toolbar>
-                    <Typography variant="h6" className={classes.test} >Welcome, {username}</Typography>
+                    {logged ? <Typography variant="h6" className={classes.test} >Welcome, {username}</Typography> 
+                    : <Typography variant="h6" className={classes.test} >Welcome to Infinote</Typography>}
+                    
                     {logged ? 
-                    <Button size="large" color="inherit" onClick={() => history.push("/")}>Log Out</Button> 
+                    <Button size="large" color="inherit" onClick={logMeOut}>Log Out</Button> 
                     : 
-                    <Button size="large" color="inherit" onClick={() => history.push("/")}>Login</Button>}
+                    <Button size="large" color="inherit" onClick={() => history.push("/login")}>Login</Button>}
                 </Toolbar>
             </AppBar>
-
+            
             <Drawer 
             className={classes.drawer}
             variant="permanent"
@@ -87,7 +98,7 @@ export default function Layout({ children, username, logged }) {
             >
                 <div>
                     <Typography variant="h5">
-                        Infinote
+                        Infinote (clickable?)
                     </Typography>
                 </div>
                 <List>
@@ -95,6 +106,7 @@ export default function Layout({ children, username, logged }) {
                         <ListItem 
                         key={item.text}
                         button
+                        disabled = {!logged}
                         onClick={() => history.push(item.path)}
                         className={location.pathname == item.path ? classes.active : null}
                         >

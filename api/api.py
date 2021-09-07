@@ -109,41 +109,6 @@ def refresh():
     return ret, 200
 
 
-@app.route("/api/upload-entry", methods=["POST"])
-@flask_praetorian.auth_required
-def upload_entry():
-    username = flask.request.form.get('username')
-    print("username: ", username)
-    filename = flask.request.form.get('filename')
-    print("filename :", filename)
-    tags = flask.request.form.get('tags')
-    print("tags: ", tags)
-    # Get the uploaded file in bytes format
-    uploaded_file = flask.request.files['file'].read()
-    # Get user id to pass to boto3
-    user_id = search_for_user_by_username(username).id
-    print("user_id: ", user_id)
-    # Must create new entry before upload to generate entry id
-    entry = new_entry(user_id, filename)
-    entry_id = entry.id
-    # Append tags, if any
-    change_entry_tags(entry_id, tags, append=False)
-    # Put the file into S3 bucket
-    response = boto3_put_file(user_id, entry_id, uploaded_file)
-    status_code = response["ResponseMetadata"]["HTTPStatusCode"]
-    print("YAYAYAYYAYAY:", status_code)
-    return {"response": status_code}, status_code
-
-    """
-    # Need separate api endpoint to just pull the one file
-    # For right now, let's pull it back
-    data = boto3_get_file(key=f"{user_id}/{entry_id}")
-    with open(f"{filename}.mp3", "wb") as f:
-        f.write(data)
-    return {"message": "test"}
-    """
-
-
 @app.route("/get-entry-file/<username>/<entry_id>")
 @flask_praetorian.auth_required
 def get_entry_file(username, entry_id):
@@ -201,7 +166,7 @@ def delete_entry():
         return {"message": "Entry could not be found or deleted"}, 404
 
 
-@app.route("/api/upload-entry-test/<username>/<filename>", methods=["POST"])
+@app.route("/api/upload-entry/<username>/<filename>", methods=["POST"])
 @flask_praetorian.auth_required
 def upload_entry_test(username, filename):
     # Get the uploaded file in bytes format

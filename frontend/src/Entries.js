@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { authFetch } from './auth';
+import { authFetch, useAuth } from './auth';
+import { useHistory } from 'react-router-dom';
 import { Container, Grid, makeStyles, Typography } from '@material-ui/core';
 import EntryCard from "./EntryCard.js";
 
@@ -10,7 +11,6 @@ const useStyles = makeStyles({
 // Component
 export function DeleteEntry(props) {
     const classes = useStyles();
-
     const [entryId, setEntryId] = useState("");
   
     function onDeleteInputChange(e) {
@@ -43,6 +43,14 @@ export function DeleteEntry(props) {
 // Component
 function EntryMain(props) {
     const [entries, setEntries] = useState([]);
+    const history = useHistory();
+    const [logged] = useAuth();
+
+    useEffect(() => {
+      if(!logged){
+        history.push("/login");
+      }
+    }, []);
 
     useEffect(() => {
       const opts = {

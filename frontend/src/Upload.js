@@ -1,23 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Redirect,
-    Link
-  } from "react-router-dom";
-import { authFetch } from './auth';
+import { useHistory } from 'react-router-dom';
+import { authFetch, useAuth } from './auth';
 // Material UI Component imports
 import { makeStyles } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import Container from '@material-ui/core/Container';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import AddIcon from '@material-ui/icons/Add';
 import DoneIcon from '@material-ui/icons/Done';
 import ClearIcon from '@material-ui/icons/Clear';
 import TextField from '@material-ui/core/TextField';
-import { LeakAddTwoTone } from '@material-ui/icons';
 
 const useStyles = makeStyles({
   btn: {
@@ -36,13 +28,20 @@ const useStyles = makeStyles({
 function Upload(props) {
 
   const classes = useStyles();
-
+  const [logged] = useAuth();
+  const history = useHistory();
   const [myFile, setMyFile] = useState(null);
   const [filename, setFilename] = useState("");
   const [tags, setTags] = useState("");
   const [fileError, setFileError] = useState(false);
   const [nameError, setNameError] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
+
+  useEffect(() => {
+    if(!logged) {
+      history.push("/login");
+    }
+  }, [])
 
   function onFileChange(e) {
     e.preventDefault();
@@ -66,41 +65,11 @@ function Upload(props) {
     setFileUploaded(false);
   }
 
-  function onFileUpload() {
-    const fd = new FormData();
-    fd.append("username", props.username);
-    fd.append("filename", filename);
-    fd.append("tags", tags);
-    fd.append("file", myFile);
-    for (let pair of fd) {
-      console.log(pair[0] + ", " + pair[1]);
-    }
-    if (props.username !== '' && filename !== '' && myFile !== null){
-      authFetch("/api/upload-entry", {
-        method: "POST",
-        body: fd
-      }).then(r => r.json()).then(r => console.log(r)).catch(error => console.log(error));
-      setMyFile(null);
-      setFilename("");
-      setTags("");
-      setFileUploaded(true);
-    }
-    else {
-      document.getElementById("warning-text").innerHTML = "Please upload valid fields";
-      if(filename == ""){
-        setNameError(true);
-      }
-      if(myFile == null) {
-        setFileError(true);
-      }
-    }
-  }
-
   function deleteFile() {
     setMyFile(null);
   }
 
-  function fileUploadTest() {
+  function onFileUpload() {
       const reader = new FileReader();
       if (myFile){
         reader.readAsDataURL(myFile);
@@ -108,7 +77,7 @@ function Upload(props) {
           console.log(reader.result);
           let text = reader.result;
           if (props.username !== '' && filename !== '' && myFile !== null){
-            authFetch(`/api/upload-entry-test/${props.username}/${filename}`, {
+            authFetch(`/api/upload-entry/${props.username}/${filename}`, {
               method: "POST",
               body: JSON.stringify({"file": text})
             }).then(r => r.json()).then(r => console.log(r)).catch(error => console.log(error));
@@ -117,17 +86,27 @@ function Upload(props) {
             setTags("");
             setFileUploaded(true);
           }
+          else {
+            document.getElementById("warning-text").innerHTML = "Please upload valid fields";
+            if(filename == ""){
+              setNameError(true);
+            }
+            if(myFile == null) {
+              setFileError(true);
+            }
+          }
         };
         reader.onerror = function (error) {
           console.log('Error: ', error);
         };
         
       }
-      else{
-        console.log("Failed")
-      }
-      
-      
+      else {
+        document.getElementById("warning-text").innerHTML = "Please upload valid fields";
+        if(myFile == null) {
+          setFileError(true);
+        }
+      }  
   }
 
   return (
@@ -186,7 +165,7 @@ function Upload(props) {
             />
           </form>
 
-          <Button onClick={fileUploadTest} startIcon={<CloudUploadIcon />} variant="contained" color="primary">Upload</Button>
+          <Button onClick={onFileUpload} startIcon={<CloudUploadIcon />} variant="contained" color="primary">Upload</Button>
       <div>
         <h3 id="warning-text"></h3>
         {fileUploaded ? <Typography variant="h5" color="primary">File Successfully Uploaded!</Typography> : <div />}
