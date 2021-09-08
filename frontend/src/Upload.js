@@ -12,9 +12,6 @@ import ClearIcon from '@material-ui/icons/Clear';
 import TextField from '@material-ui/core/TextField';
 
 const useStyles = makeStyles({
-  btn: {
-    backgroundColor: 'green'
-  },
   textField: {
     marginTop: 20,
     marginBottom: 20,

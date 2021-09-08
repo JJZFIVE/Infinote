@@ -81,7 +81,7 @@ export default function Layout({ children, username, logged, usernameFunc }) {
             position="fixed">
                 <Toolbar>
                     {logged ? <Typography variant="h6" className={classes.test} >Welcome, {username}</Typography> 
-                    : <Typography variant="h6" className={classes.test} >Welcome to Infinote</Typography>}
+                    : <Typography variant="h6" className={classes.test} >Infinote Alpha 1.0</Typography>}
                     
                     {logged ? 
                     <Button size="large" color="inherit" onClick={logMeOut}>Log Out</Button> 

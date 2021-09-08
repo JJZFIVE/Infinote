@@ -11,20 +11,7 @@ import { Login, SignUp } from './auth/LoginSignUp';
 import Layout from './Layout.js';
 import ViewEntry from './ViewEntry.js';
 import Settings from './Settings.js';
-
-// Component
-export function Home(props) {
-  const [logged] = useAuth();
-
-  return (
-    <div>
-      <h3>Home</h3>
-      <h4>I'm gonna put all of my amazing homepage stuff right here</h4>
-    </div>
-  )
-}
-
-
+import Home from './Home.js';
 
 // App Component
 function App() {
@@ -49,7 +36,7 @@ function App() {
         <Layout username={username} logged={logged} usernameFunc={usernameCallback}>
           <Switch>
             <Route exact path="/">
-              <Home usernameFunc={usernameCallback} />
+              <Home />
             </Route>
             <Route exact path="/login">
               <Login username={username} usernameFunc={usernameCallback}></Login>
