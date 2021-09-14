@@ -56,9 +56,6 @@ function App() {
             <Route exact path="/login">
               <Login username={username} usernameFunc={usernameCallback}></Login>
             </Route>
-            <Route exact path="/sign-up">
-              <SignUp username={username} usernameFunc={usernameCallback}></SignUp>
-            </Route>
             <Route path="/upload">
               <Upload username={username}/>
             </Route>

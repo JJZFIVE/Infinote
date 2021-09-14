@@ -8,11 +8,6 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
-import Paper from '@material-ui/core/Paper';
-import { Alert } from '@material-ui/lab';
-import IconButton from '@material-ui/core/IconButton';
-import Collapse from '@material-ui/core/Collapse';
-import CloseIcon from '@material-ui/icons/Close';
 
 const useStyles = makeStyles({
   textField: {
@@ -45,255 +40,6 @@ const useStyles = makeStyles({
 })
 
 // Component
-export function SignUp(props) {
-    const [firstname, setFirstname] = useState("");
-    const [email, setEmail] = useState("");
-    const [username, setUsername] = useState('');
-    const [password1, setPassword1] = useState('');
-    const [password2, setPassword2] = useState('');
-    const history = useHistory();
-    const [logged] = useAuth();
-    const classes = useStyles();
-    const [emailExists, setEmailExists] = useState(false);
-    const [usernameExists, setUsernameExists] = useState(false);
-    const [emailLoading, setEmailLoading] = useState(true);
-    const [usernameLoading, setUsernameLoading] = useState(true);
-
-    function emailCheck(checkedEmail) {
-      fetch(`/api/email-check/${checkedEmail}`).then(r => r.json()).then(r => {
-        console.log(r);
-        if(r.message == "exists") {
-          console.log("This email exists");
-          setEmailExists(true);
-          setEmailLoading(false);
-        }
-        else if (r.message == "valid") {
-          console.log("This email does not exist");
-          setEmailExists(false);
-          setEmailLoading(false);
-        }
-        else {
-          console.log("Email check error");
-          setEmailExists(false);
-          setEmailLoading(false);
-        }
-      }).catch(error => console.log(error));
-    }
-
-    function usernameCheck(checkedUsername) {
-      fetch(`/api/username-check/${checkedUsername}`).then(r => r.json()).then(r => {
-        console.log("Username:", r.message);
-        if(r.message == "exists") {
-          console.log("This username already exists");
-          setUsernameExists(true);
-          setUsernameLoading(false);
-        }
-        else if (r.message == "valid") {
-          console.log("This username does not exist");
-          setUsernameExists(false);
-          setUsernameLoading(false);
-        }
-        else {
-          console.log("Username check error");
-          setUsernameExists(false);
-          setUsernameLoading(false);
-        }
-      }).catch(error => console.log(error));
-    }
-  
-    const onSubmitClick = (e)=>{
-      e.preventDefault()
-      if (firstname === '' || email === '' || username === '' || password1 === '' || password2 === '') {
-        console.log("Input fields cannot be blank");
-        return null;
-      }
-      emailCheck(email);
-      usernameCheck(username);
-      console.log(emailExists, usernameExists);
-      while (emailLoading == true || usernameLoading == true) {
-        if (emailExists) {
-          setEmailLoading(false);
-          setUsernameLoading(false);
-          return null;
-        }
-        if (usernameExists) {
-          setEmailLoading(false);
-          setUsernameLoading(false);
-          return null;
-        }
-      }
-      
-
-      if (password1 === password2 ) {
-        let opts = {
-          'firstname': firstname,
-          'email': email,
-          'username': username,
-          'password': password1
-        }
-        console.log(opts)
-        fetch('/api/sign_up', {
-          method: 'post',
-          body: JSON.stringify(opts)
-        })
-        .then(r => r.json()).then((r) => {
-          console.log(r);
-          // This just logs in the user after creating a new user
-          if (r.message === "User created successfully!") {
-            fetch('/api/login', {
-              method: 'post',
-              body: JSON.stringify(opts)
-            }).then(r => r.json())
-              .then(token => {
-                if (token.access_token){
-                  login(token);
-                  console.log(token);
-                  props.usernameFunc(username);
-                  // Store username in localstorage
-                  localStorage.setItem('username', username);
-                  history.push("/entries");
-                } else {
-                  console.log("Please type in correct username/password")
-                }
-              })
-          }
-        });
-      }
-      else {
-        console.log("PASSWORDS DO NOT MATCH")
-      }
-    }
-      const handleFirstnameChange = (e) => {
-        setFirstname(e.target.value)
-      }
-
-      const handleEmailChange = (e) => {
-        setEmail(e.target.value)
-        setEmailExists(false);
-      }
-  
-      const handleUsernameChange = (e) => {
-        setUsername(e.target.value)
-        setUsernameExists(false);
-      }
-    
-      const handlePassword1Change = (e) => {
-        setPassword1(e.target.value)
-      }
-  
-      const handlePassword2Change = (e) => {
-        setPassword2(e.target.value)
-      }
-    
-      return (
-      <div className={classes.marginAutoContainer}>
-        {!logged? 
-        <Grid container direction="column" alignItems="center" justifyContent="center" style={{ minHeight: "90vh" }}>
-          
-          <form action="#">
-          
-          <Typography variant="h3" color="primary">Sign Up</Typography>
-
-
-          <TextField 
-              className={classes.textField}
-              label="First Name"
-              variant="outlined"
-              color="secondary"
-              required
-              value={firstname}
-              onChange={handleFirstnameChange}
-            />
-
-          {emailExists ? 
-          <Typography variant="subtitle1" color="error">
-            That email already exists in our records
-          </Typography>
-            :
-            <div />
-            }
-
-          <TextField 
-              className={classes.textField}
-              label="Email"
-              variant="outlined"
-              color="secondary"
-              required
-              value={email}
-              onChange={handleEmailChange}
-            />
-
-          {usernameExists ? 
-          <Typography variant="subtitle1" color="error">
-            That username already exists in our records
-          </Typography>
-            :
-            <div />
-            }
-
-          <TextField 
-              className={classes.textField}
-              label="Username"
-              variant="outlined"
-              color="secondary"
-              required
-              value={username}
-              onChange={handleUsernameChange}
-            />
-          
-          <TextField 
-              className={classes.textField}
-              label="Password"
-              type="password"
-              variant="outlined"
-              color="secondary"
-              required
-              value={password1}
-              onChange={handlePassword1Change}
-            />
-
-          <TextField 
-              className={classes.textField}
-              label="Confirm Password"
-              type="password"
-              variant="outlined"
-              color="secondary"
-              required
-              value={password2}
-              onChange={handlePassword2Change}
-            />    
-          </form>
-          <Button
-            variant="contained"
-            component="label"
-            color="primary"
-            onClick={onSubmitClick}
-            >
-            Sign Up
-          </Button>
-          <br />
-          <Button
-            variant="contained"
-            component="label"
-            color="secondary"
-            onClick={() => history.push("/login")}
-            >
-            Go To Login
-          </Button>
-
-
-        </Grid>
-          : <Typography variant="h4" color="primary">You're already logged in</Typography>}
-        </div>
-      )
-  
-    
-  }
-
-
-
-
-// Component
 export function Login(props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -303,13 +49,10 @@ export function Login(props) {
 
   const onSubmitClick = (e)=>{
     e.preventDefault()
-    console.log("You pressed login")
-
     let opts = {
       'username': username,
       'password': password
     }
-    console.log(opts)
     fetch('/api/login', {
       method: 'post',
       body: JSON.stringify(opts)
@@ -317,24 +60,25 @@ export function Login(props) {
       .then(token => {
         if (token.access_token){
           login(token);
-          console.log(token);
           props.usernameFunc(username);
           // Store username in localstorage
           localStorage.setItem('username', username);
           history.push("/entries");
         }
         else {
-          console.log("Please type in correct username/password");
+          document.getElementById("warning-text").innerHTML = "Please type in correct username/password";
         }
       })    
   }
 
   const handleUsernameChange = (e) => {
-    setUsername(e.target.value)
+    setUsername(e.target.value);
+    document.getElementById("warning-text").innerHTML = "";
   }
 
   const handlePasswordChange = (e) => {
-    setPassword(e.target.value)
+    setPassword(e.target.value);
+    document.getElementById("warning-text").innerHTML = "";
   }
 
   return (
@@ -342,6 +86,10 @@ export function Login(props) {
       {!logged ? <div>
         <Grid container direction="column" alignItems="center" justifyContent="center" style={{ minHeight: "70vh" }}>
         <Typography variant="h3" color="primary">Login</Typography>
+        <br /> 
+        <Container maxWidth="sm">
+          <Typography variant="subtitle1" color="textSecondary">If you were accepted into the Alpha, your submitted username will work with password = "password". You can change your password in Settings.</Typography>
+        </Container>
         <form action="#" noValidate autoComplete="off">
 
         <TextField 
@@ -364,9 +112,6 @@ export function Login(props) {
               value={password}
               onChange={handlePasswordChange}
             />
-
-        
-
       </form>
       <Button
             variant="contained"
@@ -376,16 +121,7 @@ export function Login(props) {
             >
             Log In
           </Button>
-          <br />
-      <Button
-            variant="contained"
-            component="label"
-            color="secondary"
-            onClick={() => history.push("/sign-up")}
-            >
-            Go To Sign Up
-          </Button>
-
+        <Typography variant="subtitle1" id="warning-text" color="error"></Typography>
       </Grid>
 
 
