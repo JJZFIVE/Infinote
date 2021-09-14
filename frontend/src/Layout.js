@@ -1,6 +1,7 @@
 import { makeStyles } from '@material-ui/core';
-import React from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { authFetch, logout } from './auth';
+import { useHistory, useLocation, Link } from 'react-router-dom';
 import Drawer from "@material-ui/core/Drawer";
 import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
@@ -12,6 +13,8 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Button from "@material-ui/core/Button";
+import AssignmentIcon from '@material-ui/icons/Assignment';
+import infinoteBanner from './assets/InfinoteBanner.jpg';
 
 
 const drawerWidth = 240;
@@ -43,10 +46,11 @@ const useStyles = makeStyles((theme) => {
       },
 }});
 
-export default function Layout({ children, username, logged }) {
+export default function Layout({ children, username, logged, usernameFunc }) {
     const classes = useStyles();
     const history = useHistory();
     const location = useLocation();
+    const [firstname, setFirstname] = useState("");
     const menuItems = [
         {
             text: "My Entries",
@@ -62,8 +66,26 @@ export default function Layout({ children, username, logged }) {
             text: "Settings",
             icon: <SettingsIcon color="secondary"/>,
             path: "/settings"
+        },
+        {
+            text: "Feedback",
+            icon: <AssignmentIcon color="secondary"/>,
+            path: "/feedback"
         }
     ];
+
+    useEffect(() => {
+        authFetch(`/api/get-firstname/${username}`)
+        .then(r => r.json()).then(r => setFirstname(r.firstname)).catch(error => console.log(error));
+    }, [username]);
+
+    // LOG OUT FUNCTION
+    function logMeOut() {
+        history.push("/");
+        logout();
+        usernameFunc("");
+        localStorage.clear();
+    }
 
     return (
         <div className={classes.root}>
@@ -71,30 +93,31 @@ export default function Layout({ children, username, logged }) {
             className={classes.appbar}
             position="fixed">
                 <Toolbar>
-                    <Typography variant="h6" className={classes.test} >Welcome, {username}</Typography>
+                    {logged ? <Typography variant="h6" className={classes.test} >Welcome, {firstname}</Typography> 
+                    : <Typography variant="h6" className={classes.test} >Infinote Alpha 1.0</Typography>}
+                    
                     {logged ? 
-                    <Button size="large" color="inherit" onClick={() => history.push("/")}>Log Out</Button> 
+                    <Button size="large" color="inherit" onClick={logMeOut}>Log Out</Button> 
                     : 
-                    <Button size="large" color="inherit" onClick={() => history.push("/")}>Login</Button>}
+                    <Button size="large" color="inherit" onClick={() => history.push("/login")}>Login</Button>}
                 </Toolbar>
             </AppBar>
-
+            
             <Drawer 
             className={classes.drawer}
             variant="permanent"
             anchor="left"
             classes={{ paper: classes.drawerPaper }}
             >
-                <div>
-                    <Typography variant="h5">
-                        Infinote
-                    </Typography>
-                </div>
+            <Link to="/">
+                <img src={infinoteBanner} width="200" height="80"></img>
+            </Link>       
                 <List>
                     {menuItems.map(item => (
                         <ListItem 
                         key={item.text}
                         button
+                        disabled = {!logged}
                         onClick={() => history.push(item.path)}
                         className={location.pathname == item.path ? classes.active : null}
                         >

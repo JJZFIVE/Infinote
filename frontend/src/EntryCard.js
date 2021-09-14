@@ -22,6 +22,7 @@ const useStyles = makeStyles((theme) => {
 export default function EntryCard({ entry, deleteEntry }) {
     const history = useHistory();
     const classes = useStyles();
+    const [entryInfo, setEntryInfo] = useState({});
 
 
     return (

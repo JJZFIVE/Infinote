@@ -10,61 +10,54 @@ import { useAuth } from './auth';
 import { Login, SignUp } from './auth/LoginSignUp';
 import Layout from './Layout.js';
 import ViewEntry from './ViewEntry.js';
-
-// Component
-export function Home(props) {
-
-  //const [logged, setLogged] = useState(null);
-  const [username, setUsername] = useState("");
-  const [showLogin, setShowLogin] = useState(true);
-  const [logged] = useAuth();
-
-  useEffect(() => {
-    props.usernameFunc(username);
-  }, [username])
-
-  function usernameCallback(data) {
-    setUsername(data);
-  }
-
-  function showLoginCallback(data) {
-    setShowLogin(data);
-  }
-  return (
-    <div>
-      <h3>Home</h3>
-      {showLogin ? 
-      <Login usernameFunc={usernameCallback} showLoginFunc={showLoginCallback} /> 
-      : <SignUp usernameFunc={usernameCallback} showLoginFunc={showLoginCallback} />}
-    </div>
-  )
-}
-
-function Settings() {
-  return (
-    <div>
-      <h3>Settings</h3>
-    </div>
-  )
-}
-
+import Settings from './Settings.js';
+import Home from './Home.js';
 
 // App Component
 function App() {
   const [username, setUsername] = useState("");
   const [logged] = useAuth();
+
+  useEffect(() => {
+    const loggedInUser = localStorage.getItem("username");
+    if (loggedInUser) {
+      setUsername(loggedInUser);
+      console.log("Username:", loggedInUser);
+    }
+  }, [username]);
   
   function usernameCallback(data) {
     setUsername(data);
   }
 
+  function FeedbackForm() {
+    useEffect(() => {
+      window.location.replace('https://forms.gle/cj7ToH5QzSQYJWJY8')
+    }, [])
+    return null;
+  }
+
+  function AlphaSignUp() {
+    useEffect(() => {
+      window.location.replace('https://forms.gle/ba4rrcYBdzZzECp98')
+    }, [])
+    return null;
+  }
+
+  
   return (
     <div className="App">
       <Router>
-        <Layout username={username} logged={logged}>
+        <Layout username={username} logged={logged} usernameFunc={usernameCallback}>
           <Switch>
             <Route exact path="/">
-              <Home usernameFunc={usernameCallback} />
+              <Home />
+            </Route>
+            <Route exact path="/login">
+              <Login username={username} usernameFunc={usernameCallback}></Login>
+            </Route>
+            <Route exact path="/sign-up">
+              <SignUp username={username} usernameFunc={usernameCallback}></SignUp>
             </Route>
             <Route path="/upload">
               <Upload username={username}/>
@@ -77,6 +70,12 @@ function App() {
             </Route>
             <Route path="/entries/:entry_id">
               <ViewEntry username={username}/>
+            </Route>
+            <Route exact path='/feedback' >
+              <FeedbackForm />
+            </Route>
+            <Route exact path="/alpha-sign-up">
+              <AlphaSignUp />
             </Route>
           </Switch>
         </Layout>

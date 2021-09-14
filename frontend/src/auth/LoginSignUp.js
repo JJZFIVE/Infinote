@@ -1,5 +1,48 @@
-import React, { useState, useEffect, props } from 'react';
-import {login, useAuth, logout, authFetch } from './index';
+import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import {login, useAuth } from './index';
+// Material UI Component imports
+import { makeStyles } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Grid from '@material-ui/core/Grid';
+import Container from '@material-ui/core/Container';
+import Paper from '@material-ui/core/Paper';
+import { Alert } from '@material-ui/lab';
+import IconButton from '@material-ui/core/IconButton';
+import Collapse from '@material-ui/core/Collapse';
+import CloseIcon from '@material-ui/icons/Close';
+
+const useStyles = makeStyles({
+  textField: {
+    marginTop: 20,
+    marginBottom: 20,
+    align: "center",
+    display: "block"
+  },
+  welcomeToInfinote: {
+      marginTop: 50,
+      marginBottom: 20,
+      align: "center",
+      display: "block"
+  },
+  getStartedButton: {
+      marginTop: 20,
+      marginBottom: 30,
+      align: "center",
+  },
+  paper: {
+      display: 'flex',
+      '& > *': {
+        margin: 5
+      },
+      backgroundColor: "#EAE5E4"
+  },
+  alert: {
+      width: '100%',
+    },
+})
 
 // Component
 export function SignUp(props) {
@@ -8,16 +51,80 @@ export function SignUp(props) {
     const [username, setUsername] = useState('');
     const [password1, setPassword1] = useState('');
     const [password2, setPassword2] = useState('');
-    const [logged] = useAuth()
+    const history = useHistory();
+    const [logged] = useAuth();
+    const classes = useStyles();
+    const [emailExists, setEmailExists] = useState(false);
+    const [usernameExists, setUsernameExists] = useState(false);
+    const [emailLoading, setEmailLoading] = useState(true);
+    const [usernameLoading, setUsernameLoading] = useState(true);
+
+    function emailCheck(checkedEmail) {
+      fetch(`/api/email-check/${checkedEmail}`).then(r => r.json()).then(r => {
+        console.log(r);
+        if(r.message == "exists") {
+          console.log("This email exists");
+          setEmailExists(true);
+          setEmailLoading(false);
+        }
+        else if (r.message == "valid") {
+          console.log("This email does not exist");
+          setEmailExists(false);
+          setEmailLoading(false);
+        }
+        else {
+          console.log("Email check error");
+          setEmailExists(false);
+          setEmailLoading(false);
+        }
+      }).catch(error => console.log(error));
+    }
+
+    function usernameCheck(checkedUsername) {
+      fetch(`/api/username-check/${checkedUsername}`).then(r => r.json()).then(r => {
+        console.log("Username:", r.message);
+        if(r.message == "exists") {
+          console.log("This username already exists");
+          setUsernameExists(true);
+          setUsernameLoading(false);
+        }
+        else if (r.message == "valid") {
+          console.log("This username does not exist");
+          setUsernameExists(false);
+          setUsernameLoading(false);
+        }
+        else {
+          console.log("Username check error");
+          setUsernameExists(false);
+          setUsernameLoading(false);
+        }
+      }).catch(error => console.log(error));
+    }
   
     const onSubmitClick = (e)=>{
       e.preventDefault()
-      console.log("You pressed sign up", username, password1)
       if (firstname === '' || email === '' || username === '' || password1 === '' || password2 === '') {
-        console.log("Input fields cannot be blank")
-        return null
+        console.log("Input fields cannot be blank");
+        return null;
       }
-      if (password1 === password2) {
+      emailCheck(email);
+      usernameCheck(username);
+      console.log(emailExists, usernameExists);
+      while (emailLoading == true || usernameLoading == true) {
+        if (emailExists) {
+          setEmailLoading(false);
+          setUsernameLoading(false);
+          return null;
+        }
+        if (usernameExists) {
+          setEmailLoading(false);
+          setUsernameLoading(false);
+          return null;
+        }
+      }
+      
+
+      if (password1 === password2 ) {
         let opts = {
           'firstname': firstname,
           'email': email,
@@ -42,6 +149,9 @@ export function SignUp(props) {
                   login(token);
                   console.log(token);
                   props.usernameFunc(username);
+                  // Store username in localstorage
+                  localStorage.setItem('username', username);
+                  history.push("/entries");
                 } else {
                   console.log("Please type in correct username/password")
                 }
@@ -59,10 +169,12 @@ export function SignUp(props) {
 
       const handleEmailChange = (e) => {
         setEmail(e.target.value)
+        setEmailExists(false);
       }
   
       const handleUsernameChange = (e) => {
         setUsername(e.target.value)
+        setUsernameExists(false);
       }
     
       const handlePassword1Change = (e) => {
@@ -74,55 +186,104 @@ export function SignUp(props) {
       }
     
       return (
-        <div>
-          {!logged? <div><form action="#">
-          <h2>Sign Up</h2>
-            <div>
-              <input type="text" 
-                placeholder="First Name" 
-                onChange={handleFirstnameChange}
-                value={firstname} 
-              />
-            </div>
-            <div>
-              <input type="text" 
-                placeholder="Email" 
-                onChange={handleEmailChange}
-                value={email} 
-              />
-            </div>
-            <div>
-              <input type="text" 
-                placeholder="Username" 
-                onChange={handleUsernameChange}
-                value={username} 
-              />
-            </div>
-            <div>
-              <input
-                type="password"
-                placeholder="Password"
-                onChange={handlePassword1Change}
-                value={password1}
-              />
-            </div>
-            <div>
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                onChange={handlePassword2Change}
-                value={password2}
-              />
-            </div>
-            <button onClick={onSubmitClick} type="submit">
-              Sign Up Now
-            </button>
+      <div className={classes.marginAutoContainer}>
+        {!logged? 
+        <Grid container direction="column" alignItems="center" justifyContent="center" style={{ minHeight: "90vh" }}>
+          
+          <form action="#">
+          
+          <Typography variant="h3" color="primary">Sign Up</Typography>
+
+
+          <TextField 
+              className={classes.textField}
+              label="First Name"
+              variant="outlined"
+              color="secondary"
+              required
+              value={firstname}
+              onChange={handleFirstnameChange}
+            />
+
+          {emailExists ? 
+          <Typography variant="subtitle1" color="error">
+            That email already exists in our records
+          </Typography>
+            :
+            <div />
+            }
+
+          <TextField 
+              className={classes.textField}
+              label="Email"
+              variant="outlined"
+              color="secondary"
+              required
+              value={email}
+              onChange={handleEmailChange}
+            />
+
+          {usernameExists ? 
+          <Typography variant="subtitle1" color="error">
+            That username already exists in our records
+          </Typography>
+            :
+            <div />
+            }
+
+          <TextField 
+              className={classes.textField}
+              label="Username"
+              variant="outlined"
+              color="secondary"
+              required
+              value={username}
+              onChange={handleUsernameChange}
+            />
+          
+          <TextField 
+              className={classes.textField}
+              label="Password"
+              type="password"
+              variant="outlined"
+              color="secondary"
+              required
+              value={password1}
+              onChange={handlePassword1Change}
+            />
+
+          <TextField 
+              className={classes.textField}
+              label="Confirm Password"
+              type="password"
+              variant="outlined"
+              color="secondary"
+              required
+              value={password2}
+              onChange={handlePassword2Change}
+            />    
           </form>
-          <div>
-            <button onClick={() => props.showLoginFunc(true)}>Go to Login</button>
-          </div>
-          </div>
-          : <div />}
+          <Button
+            variant="contained"
+            component="label"
+            color="primary"
+            onClick={onSubmitClick}
+            >
+            Sign Up
+          </Button>
+          <br />
+          <Button
+            variant="contained"
+            component="label"
+            color="secondary"
+            onClick={() => history.push("/login")}
+            >
+            Go To Login
+          </Button>
+
+
+        </Grid>
+          : <Typography variant="h4" color="primary">You're already logged in</Typography>}
         </div>
       )
   
@@ -136,7 +297,9 @@ export function SignUp(props) {
 export function Login(props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const history = useHistory();
   const [logged] = useAuth();
+  const classes = useStyles();
 
   const onSubmitClick = (e)=>{
     e.preventDefault()
@@ -156,6 +319,9 @@ export function Login(props) {
           login(token);
           console.log(token);
           props.usernameFunc(username);
+          // Store username in localstorage
+          localStorage.setItem('username', username);
+          history.push("/entries");
         }
         else {
           console.log("Please type in correct username/password");
@@ -173,33 +339,58 @@ export function Login(props) {
 
   return (
     <div>
-      {!logged? <div>
-        <h2>Login</h2>
-        <form action="#">
-        <div>
-          <input type="text" 
-            placeholder="Username" 
-            onChange={handleUsernameChange}
-            value={username} 
-          />
-        </div>
-        <div>
-          <input
-            type="password"
-            placeholder="Password"
-            onChange={handlePasswordChange}
-            value={password}
-          />
-        </div>
-        <button onClick={onSubmitClick} type="submit">
-          Login Now
-        </button>
+      {!logged ? <div>
+        <Grid container direction="column" alignItems="center" justifyContent="center" style={{ minHeight: "70vh" }}>
+        <Typography variant="h3" color="primary">Login</Typography>
+        <form action="#" noValidate autoComplete="off">
+
+        <TextField 
+              className={classes.textField}
+              label="Username"
+              variant="outlined"
+              color="secondary"
+              required
+              value={username}
+              onChange={handleUsernameChange}
+            />
+          
+        <TextField 
+              className={classes.textField}
+              label="Password"
+              type="password"
+              variant="outlined"
+              color="secondary"
+              required
+              value={password}
+              onChange={handlePasswordChange}
+            />
+
+        
+
       </form>
-      <div>
-      < button onClick={() => props.showLoginFunc(false)}>Go to Sign Up</button>
+      <Button
+            variant="contained"
+            component="label"
+            color="primary"
+            onClick={onSubmitClick}
+            >
+            Log In
+          </Button>
+          <br />
+      <Button
+            variant="contained"
+            component="label"
+            color="secondary"
+            onClick={() => history.push("/sign-up")}
+            >
+            Go To Sign Up
+          </Button>
+
+      </Grid>
+
+
       </div>
-      </div>
-      : <button onClick={() => logout()}>Logout</button>}
+      : <Typography variant="h4" color="primary">You're already logged in</Typography> }
     </div>
   )
 }

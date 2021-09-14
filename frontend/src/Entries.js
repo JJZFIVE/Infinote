@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { authFetch } from './auth';
+import { authFetch, useAuth } from './auth';
+import { useHistory } from 'react-router-dom';
 import { Container, Grid, makeStyles, Typography } from '@material-ui/core';
 import EntryCard from "./EntryCard.js";
 
 const useStyles = makeStyles({
-
+  headerText: {
+    marginTop: 20,
+    marginBottom: 20,
+    align: "center",
+    display: "block"
+  },
 })
 
 // Component
 export function DeleteEntry(props) {
     const classes = useStyles();
-
     const [entryId, setEntryId] = useState("");
   
     function onDeleteInputChange(e) {
@@ -42,7 +47,16 @@ export function DeleteEntry(props) {
 
 // Component
 function EntryMain(props) {
+    const classes = useStyles();
     const [entries, setEntries] = useState([]);
+    const history = useHistory();
+    const [logged] = useAuth();
+
+    useEffect(() => {
+      if(!logged){
+        history.push("/login");
+      }
+    }, []);
 
     useEffect(() => {
       const opts = {
@@ -72,16 +86,20 @@ function EntryMain(props) {
     }
 
     return (
-      <Container>
-        <Grid container spacing={3}>
-          {entries.map((item) => (
-            <Grid item key={item.id} xs={12} md={6} lg={4}>
-              <EntryCard entry={item} deleteEntry={deleteEntry}/>
-            </Grid>
-          ))}
+      <div>
+        <Grid container direction="column" alignItems="center" justifyContent="center">
+          <Typography variant="h2" color="primary" className={classes.headerText}>My Journal Entries</Typography>
         </Grid>
-      </Container>
-
+        <Container>
+          <Grid container spacing={3}>
+            {entries.map((item) => (
+              <Grid item key={item.id} xs={12} md={6} lg={4}>
+                <EntryCard entry={item} deleteEntry={deleteEntry}/>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </div>
     )
 }
 

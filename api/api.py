@@ -28,17 +28,6 @@ mongoengine.connect(host=DB_URI)
 guard.init_app(app=app, user_class=User)
 flask_cors.CORS(app)
 
-# Initialize database with jjzfive as the admin
-with app.app_context():
-    if User.objects(username="jjzfive").count() < 1:
-        create_new_user(
-            firstname="Joe",
-            email="jjzfive@gmail.com",
-            username="jjzfive",
-            password=guard.hash_password("password"),
-            roles="admin",
-        )
-
 # Way eaiser to have this JWT token function here
 
 
@@ -54,11 +43,9 @@ def create_jwt_token(user):
 
 
 # Api Routes
-@app.route("/api/protected/delete_user", methods=["POST"])
+@app.route("/api/delete-user/<username>", methods=["POST"])
 @flask_praetorian.auth_required
-def delete_user():
-    req = flask.request.get_json(force=True)
-    username = req.get("username", None)
+def delete_user(username):
     del_user = User.objects(username=username).first()
     if del_user:
         del_user.delete()
@@ -102,49 +89,13 @@ def login():
 @app.route("/api/refresh", methods=["POST"])
 @flask_praetorian.auth_required
 def refresh():
-    print("refresh request")
     old_token = flask.request.get_data()
     new_token = guard.refresh_jwt_token(old_token)
     ret = {"access_token": new_token}
     return ret, 200
 
 
-@app.route("/api/upload-entry", methods=["POST"])
-@flask_praetorian.auth_required
-def upload_entry():
-    username = flask.request.form.get('username')
-    print("username: ", username)
-    filename = flask.request.form.get('filename')
-    print("filename :", filename)
-    tags = flask.request.form.get('tags')
-    print("tags: ", tags)
-    # Get the uploaded file in bytes format
-    uploaded_file = flask.request.files['file'].read()
-    # Get user id to pass to boto3
-    user_id = search_for_user_by_username(username).id
-    print("user_id: ", user_id)
-    # Must create new entry before upload to generate entry id
-    entry = new_entry(user_id, filename)
-    entry_id = entry.id
-    # Append tags, if any
-    change_entry_tags(entry_id, tags, append=False)
-    # Put the file into S3 bucket
-    response = boto3_put_file(user_id, entry_id, uploaded_file)
-    status_code = response["ResponseMetadata"]["HTTPStatusCode"]
-    print("YAYAYAYYAYAY:", status_code)
-    return {"response": status_code}, status_code
-
-    """
-    # Need separate api endpoint to just pull the one file
-    # For right now, let's pull it back
-    data = boto3_get_file(key=f"{user_id}/{entry_id}")
-    with open(f"{filename}.mp3", "wb") as f:
-        f.write(data)
-    return {"message": "test"}
-    """
-
-
-@app.route("/get-entry-file/<username>/<entry_id>")
+@app.route("/api/get-entry-file/<username>/<entry_id>")
 @flask_praetorian.auth_required
 def get_entry_file(username, entry_id):
     user_id = search_for_user_by_username(username).id
@@ -161,13 +112,11 @@ def get_entries():
     # UNFINISHED
     # This DOES NOT PULL S3 bucket info. Only Mongo info. Only first 10? 20? 50? Think # of items/page
     req = flask.request.get_json(force=True)
-    print("YAYAYAYA", req)
     user = search_for_user_by_username(req["username"])
     entries = find_entries_for_user(user)
     # Convert entries to Python array for JSON serialization
     returned_entries = []
     for idx, entry in enumerate(entries):
-        print(f"{idx + 1}. {entry.name}")
         returned_entries.append(
             {
                 "id": str(entry.id),
@@ -201,7 +150,7 @@ def delete_entry():
         return {"message": "Entry could not be found or deleted"}, 404
 
 
-@app.route("/api/upload-entry-test/<username>/<filename>", methods=["POST"])
+@app.route("/api/upload-entry/<username>/<filename>", methods=["POST"])
 @flask_praetorian.auth_required
 def upload_entry_test(username, filename):
     # Get the uploaded file in bytes format
@@ -209,7 +158,6 @@ def upload_entry_test(username, filename):
     uploaded_file = data["file"]
     # Get user id to pass to boto3
     user_id = search_for_user_by_username(username).id
-    print("user_id: ", user_id)
     # Must create new entry before upload to generate entry id
     entry = new_entry(user_id, filename)
     entry_id = entry.id
@@ -218,8 +166,60 @@ def upload_entry_test(username, filename):
     # Put the file into S3 bucket
     response = boto3_put_file(user_id, entry_id, uploaded_file)
     status_code = response["ResponseMetadata"]["HTTPStatusCode"]
-    print("YAYAYAYYAYAY:", status_code)
     return {"response": status_code}, status_code
+
+
+@app.route("/api/get-user-email/<username>")
+@flask_praetorian.auth_required
+def get_user_settings(username):
+    user = search_for_user_by_username(username)
+    email = user.email
+    firstname = user.firstname
+    return {"email": email, "firstname": firstname}, 200
+
+
+@app.route("/api/change-password/<username>", methods=["POST"])
+@flask_praetorian.auth_required
+def change_password(username):
+    data = flask.request.get_json(force=True)
+    password = guard.hash_password(data["password"])
+    user = search_for_user_by_username(username)
+    # remember to hash new password
+    user.password = password
+    user.save()
+    return {"message": "Passsword changed successfully"}, 200
+
+
+@app.route("/api/email-check/<email>")
+def email_check(email):
+    user = User.objects(email=email).first()
+    if user:
+        return {"message": "exists"}, 409
+    else:
+        return {"message": "valid"}, 200
+
+
+@app.route("/api/username-check/<username>")
+def username_check(username):
+    user = User.objects(username=username).first()
+    if user:
+        return {"message": "exists"}, 409
+    else:
+        return {"message": "valid"}, 200
+
+
+@app.route("/api/get-entry-info-by-id/<id>")
+@flask_praetorian.auth_required
+def get_entry_info_by_id(id):
+    entry = Entry.objects(id=id).first()
+    return {"name": entry.name, "registeredDate": entry.registered_date}, 200
+
+
+@app.route("/api/get-firstname/<username>")
+@flask_praetorian.auth_required
+def get_firstname(username):
+    user = User.objects(username=username).first()
+    return {"firstname": user.firstname}, 200
 
 
 # Run the example
