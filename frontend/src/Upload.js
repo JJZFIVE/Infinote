@@ -21,8 +21,6 @@ const useStyles = makeStyles({
   },
 })
 
-
-
 function Upload(props) {
   const classes = useStyles();
   const [logged] = useAuth();

@@ -15,7 +15,8 @@ from db_functions import (create_new_user, search_for_user_by_username, update_u
 # Activating virtual environment: source .venv/bin/activate
 # IMPORTANT: HASH PASSWORD BEFORE PASSING INTO CREATE_NEW_USER FUNCTION
 
-app = flask.Flask(__name__)
+app = flask.Flask(__name__, static_folder='../frontend/build',
+                  static_url_path='')
 guard = flask_praetorian.Praetorian()
 app.config["SECRET_KEY"] = "top secret"
 app.config["JWT_ACCESS_LIFESPAN"] = {"hours": 24}
@@ -224,4 +225,4 @@ def get_firstname(username):
 
 # Run the example
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0")
