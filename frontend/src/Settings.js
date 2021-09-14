@@ -1,8 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useAuth, authFetch } from './auth';
+import { makeStyles } from '@material-ui/core';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Container from '@material-ui/core/Container';
+
+const useStyles = makeStyles({
+    textField: {
+      marginTop: 20,
+      marginBottom: 20,
+      align: "center",
+      display: "block"
+    },
+    deleteAccountHeader: {
+    marginTop: 40,
+      marginBottom: 5,
+      align: "center",
+      display: "block"
+    },
+    everything: {
+        marginTop: 40,
+    },
+    textSeparation: {
+        marginTop: 10,
+        marginBottom: 10
+    }
+  })
 
 export default function Settings({ username }) {
+    const classes = useStyles();
     const history = useHistory();
     const [logged] = useAuth();
     const [email, setEmail] = useState("");
@@ -21,7 +50,7 @@ export default function Settings({ username }) {
     }, [])
 
     useEffect(() => {
-        authFetch(`/get-user-email/${username}`).then(r => r.json()).then(r => {setEmail(r.email); setFirstName(r.firstname); setLoading(false)})
+        authFetch(`/api/get-user-email/${username}`).then(r => r.json()).then(r => {setEmail(r.email); setFirstName(r.firstname); setLoading(false)})
         .catch(error => console.log(error));
 
     }, [])
@@ -33,7 +62,7 @@ export default function Settings({ username }) {
                 const opts = {
                     "password": password1
                 }
-                authFetch(`/change-password/${username}`, {
+                authFetch(`/api/change-password/${username}`, {
                     method: "POST",
                     body: JSON.stringify(opts)
                 }).then(r => r.json()).then(r => console.log(r)).catch(error => console.log(error));
@@ -61,6 +90,7 @@ export default function Settings({ username }) {
     }
 
     function onDeleteTextChange(e) {
+        e.preventDefault();
         setDeleteText(e.target.value);
         if(deleteText !== username){
             setButtonConfirm(false);
@@ -69,28 +99,95 @@ export default function Settings({ username }) {
 
 
     return (
-      <div>
-        <h1>Settings</h1>
-        <div>
-            {loading ? <h3>Loading Settings...</h3> : 
+      <div className={classes.everything}>
+        <Grid container direction="column" alignItems="center" justifyContent="center">
+            <Typography variant="h2" className={classes.textSeparation}>Settings</Typography>
             <div>
-                <h3>First Name: {firstname}</h3>
-                <h3>Email: {email}</h3>
+                {loading ? <Typography variant="subtitle2">Loading Settings...</Typography>: 
+                <div>
+                    <Typography variant="h5" className={classes.textSeparation}>First Name: {firstname}</Typography>
+                    <Typography variant="h5" className={classes.textSeparation}>Email: {email}</Typography>
+                </div>
+                }
             </div>
-            }
-        </div>
-        <div>
-            <h3>Change password</h3>
-            <input type="password" type="text" placeholder="New Password" onChange={(e) => setPassword1(e.target.value)}></input>
-            <input type="password" type="text" placeholder="Confirm New Password" onChange={(e) => setPassword2(e.target.value)}></input>
-            <button onClick={onPasswordButton}>Change Password</button>
-        </div>
-        <div>
-            <h3>Delete Account</h3>
-            <h4>Type in your username</h4>
-            <input type="text" placeholder={username} onChange={onDeleteTextChange}></input>
-            {buttonConfirm ? <button onClick={onDeleteTextButton2}>Confirm Delete</button> : <button onClick={onDeleteTextButton1}>Delete</button>}
-        </div>
+            <div>
+                <Typography className={classes.textField} variant="h4">Change password</Typography>
+                <Container>
+                <Grid container spacing={4}>
+                <Grid item xs={12} md={4} lg={4}>
+                    <TextField 
+                        className={classes.textField}
+                        label="New Password"
+                        variant="outlined"
+                        color="secondary"
+                        type="password"
+                        required
+                        value={password1}
+                        onChange={(e) => setPassword1(e.target.value)}
+                        />
+                </Grid>
+                <Grid item xs={12} md={4} lg={4}>
+                    <TextField 
+                        className={classes.textField}
+                        label="Confirm Password"
+                        variant="outlined"
+                        color="secondary"
+                        type="password"
+                        required
+                        value={password2}
+                        onChange={(e) => setPassword2(e.target.value)}
+                        /> 
+                </Grid>
+                <Grid item xs={12} md={4} lg={4}>
+                    <br />
+                    <Button 
+                    variant="contained"
+                    component="label"
+                    size="large"
+                    onClick={onPasswordButton}>
+                        Change Password</Button>
+                </Grid>
+                </Grid>
+                </Container>
+            </div>
+            <div>
+            <Container>
+                <Grid container spacing={8}>
+                    <Grid item xs={12} md={6} lg={6}>
+                        <Typography className={classes.deleteAccountHeader} variant="h4">Delete Account</Typography>
+                        <Typography variant="subtitle2" color='textSecondary'>Warning: cannot be undone</Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6} lg={6}>
+                        <Typography className={classes.deleteAccountHeader} variant="subtitle1">Type in your username to delete</Typography>
+                        <TextField
+                        label={username}
+                        variant="outlined"
+                        color="secondary"
+                        type="text"
+                        value={deleteText}
+                        onChange={onDeleteTextChange}
+                        /> 
+                        {buttonConfirm ? 
+                        <Button
+                        onClick={onDeleteTextButton2}
+                        variant="contained"
+                        component="label"
+                        >
+                        Confirm Delete
+                        </Button>
+                        :
+                        <Button
+                        onClick={onDeleteTextButton1}
+                        variant="contained"
+                        component="label"
+                        >
+                        Delete
+                        </Button>}
+                    </Grid>
+                </Grid>
+            </Container>
+            </div>
+        </Grid>
       </div>
     )
   }

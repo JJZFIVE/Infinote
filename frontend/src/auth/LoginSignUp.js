@@ -54,14 +54,77 @@ export function SignUp(props) {
     const history = useHistory();
     const [logged] = useAuth();
     const classes = useStyles();
+    const [emailExists, setEmailExists] = useState(false);
+    const [usernameExists, setUsernameExists] = useState(false);
+    const [emailLoading, setEmailLoading] = useState(true);
+    const [usernameLoading, setUsernameLoading] = useState(true);
+
+    function emailCheck(checkedEmail) {
+      fetch(`/api/email-check/${checkedEmail}`).then(r => r.json()).then(r => {
+        console.log(r);
+        if(r.message == "exists") {
+          console.log("This email exists");
+          setEmailExists(true);
+          setEmailLoading(false);
+        }
+        else if (r.message == "valid") {
+          console.log("This email does not exist");
+          setEmailExists(false);
+          setEmailLoading(false);
+        }
+        else {
+          console.log("Email check error");
+          setEmailExists(false);
+          setEmailLoading(false);
+        }
+      }).catch(error => console.log(error));
+    }
+
+    function usernameCheck(checkedUsername) {
+      fetch(`/api/username-check/${checkedUsername}`).then(r => r.json()).then(r => {
+        console.log("Username:", r.message);
+        if(r.message == "exists") {
+          console.log("This username already exists");
+          setUsernameExists(true);
+          setUsernameLoading(false);
+        }
+        else if (r.message == "valid") {
+          console.log("This username does not exist");
+          setUsernameExists(false);
+          setUsernameLoading(false);
+        }
+        else {
+          console.log("Username check error");
+          setUsernameExists(false);
+          setUsernameLoading(false);
+        }
+      }).catch(error => console.log(error));
+    }
   
     const onSubmitClick = (e)=>{
       e.preventDefault()
       if (firstname === '' || email === '' || username === '' || password1 === '' || password2 === '') {
-        console.log("Input fields cannot be blank")
-        return null
+        console.log("Input fields cannot be blank");
+        return null;
       }
-      if (password1 === password2) {
+      emailCheck(email);
+      usernameCheck(username);
+      console.log(emailExists, usernameExists);
+      while (emailLoading == true || usernameLoading == true) {
+        if (emailExists) {
+          setEmailLoading(false);
+          setUsernameLoading(false);
+          return null;
+        }
+        if (usernameExists) {
+          setEmailLoading(false);
+          setUsernameLoading(false);
+          return null;
+        }
+      }
+      
+
+      if (password1 === password2 ) {
         let opts = {
           'firstname': firstname,
           'email': email,
@@ -106,10 +169,12 @@ export function SignUp(props) {
 
       const handleEmailChange = (e) => {
         setEmail(e.target.value)
+        setEmailExists(false);
       }
   
       const handleUsernameChange = (e) => {
         setUsername(e.target.value)
+        setUsernameExists(false);
       }
     
       const handlePassword1Change = (e) => {
@@ -140,6 +205,14 @@ export function SignUp(props) {
               onChange={handleFirstnameChange}
             />
 
+          {emailExists ? 
+          <Typography variant="subtitle1" color="error">
+            That email already exists in our records
+          </Typography>
+            :
+            <div />
+            }
+
           <TextField 
               className={classes.textField}
               label="Email"
@@ -149,6 +222,14 @@ export function SignUp(props) {
               value={email}
               onChange={handleEmailChange}
             />
+
+          {usernameExists ? 
+          <Typography variant="subtitle1" color="error">
+            That username already exists in our records
+          </Typography>
+            :
+            <div />
+            }
 
           <TextField 
               className={classes.textField}
@@ -181,7 +262,7 @@ export function SignUp(props) {
               value={password2}
               onChange={handlePassword2Change}
             />    
-
+          </form>
           <Button
             variant="contained"
             component="label"
@@ -190,7 +271,6 @@ export function SignUp(props) {
             >
             Sign Up
           </Button>
-          </form>
           <br />
           <Button
             variant="contained"
@@ -260,6 +340,7 @@ export function Login(props) {
   return (
     <div>
       {!logged ? <div>
+        <Grid container direction="column" alignItems="center" justifyContent="center" style={{ minHeight: "70vh" }}>
         <Typography variant="h3" color="primary">Login</Typography>
         <form action="#" noValidate autoComplete="off">
 
@@ -284,7 +365,10 @@ export function Login(props) {
               onChange={handlePasswordChange}
             />
 
-        <Button
+        
+
+      </form>
+      <Button
             variant="contained"
             component="label"
             color="primary"
@@ -292,9 +376,7 @@ export function Login(props) {
             >
             Log In
           </Button>
-
-      </form>
-      <br />
+          <br />
       <Button
             variant="contained"
             component="label"
@@ -303,6 +385,8 @@ export function Login(props) {
             >
             Go To Sign Up
           </Button>
+
+      </Grid>
 
 
       </div>

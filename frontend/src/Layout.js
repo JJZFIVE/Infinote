@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/core';
-import React from 'react';
-import { logout } from './auth';
-import { useHistory, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { authFetch, logout } from './auth';
+import { useHistory, useLocation, Link } from 'react-router-dom';
 import Drawer from "@material-ui/core/Drawer";
 import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
@@ -13,6 +13,8 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Button from "@material-ui/core/Button";
+import AssignmentIcon from '@material-ui/icons/Assignment';
+import infinoteBanner from './assets/InfinoteBanner.jpg';
 
 
 const drawerWidth = 240;
@@ -48,6 +50,7 @@ export default function Layout({ children, username, logged, usernameFunc }) {
     const classes = useStyles();
     const history = useHistory();
     const location = useLocation();
+    const [firstname, setFirstname] = useState("");
     const menuItems = [
         {
             text: "My Entries",
@@ -63,8 +66,18 @@ export default function Layout({ children, username, logged, usernameFunc }) {
             text: "Settings",
             icon: <SettingsIcon color="secondary"/>,
             path: "/settings"
+        },
+        {
+            text: "Feedback",
+            icon: <AssignmentIcon color="secondary"/>,
+            path: "/feedback"
         }
     ];
+
+    useEffect(() => {
+        authFetch(`/api/get-firstname/${username}`)
+        .then(r => r.json()).then(r => setFirstname(r.firstname)).catch(error => console.log(error));
+    }, [username]);
 
     // LOG OUT FUNCTION
     function logMeOut() {
@@ -80,7 +93,7 @@ export default function Layout({ children, username, logged, usernameFunc }) {
             className={classes.appbar}
             position="fixed">
                 <Toolbar>
-                    {logged ? <Typography variant="h6" className={classes.test} >Welcome, {username}</Typography> 
+                    {logged ? <Typography variant="h6" className={classes.test} >Welcome, {firstname}</Typography> 
                     : <Typography variant="h6" className={classes.test} >Infinote Alpha 1.0</Typography>}
                     
                     {logged ? 
@@ -96,11 +109,9 @@ export default function Layout({ children, username, logged, usernameFunc }) {
             anchor="left"
             classes={{ paper: classes.drawerPaper }}
             >
-                <div>
-                    <Typography variant="h5">
-                        Infinote (clickable?)
-                    </Typography>
-                </div>
+            <Link to="/">
+                <img src={infinoteBanner} width="200" height="80"></img>
+            </Link>       
                 <List>
                     {menuItems.map(item => (
                         <ListItem 

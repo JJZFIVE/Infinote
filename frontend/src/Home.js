@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 // Material UI imports
 import { makeStyles } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
@@ -35,7 +36,7 @@ const useStyles = makeStyles({
         '& > *': {
           margin: 5
         },
-        backgroundColor: "#EAE5E4"
+        backgroundColor: "#EAEAEA"
     },
     alert: {
         width: '100%',
@@ -45,6 +46,7 @@ const useStyles = makeStyles({
 export default function Home() {
     const classes = useStyles();
     const [open, setOpen] = useState(true);
+    const history = useHistory();
 
     return (
       <div>
@@ -65,7 +67,7 @@ export default function Home() {
                 </IconButton>
                 }
             >
-            Infinote is currently in closed <strong>Alpha.</strong> Press Get Started to apply.
+            Infinote is currently in <strong>Closed Alpha.</strong> Press Get Started to apply.
             </Alert>
       </Collapse>
 
@@ -73,9 +75,9 @@ export default function Home() {
           <Grid container direction="column" alignItems="center" justifyContent="center">
             <Typography className={classes.welcomeToInfinote} variant="h2" color="primary">Welcome to Infinote</Typography>
             <Container maxWidth="md">
-                <Typography align="center" className={classes.textField} variant="h5" gutterBottom>Infinote combines the joy of journaling with the ease of using your own voice, yielding a truly unique note-taking experience.</Typography>
+                <Typography align="center" className={classes.textField} variant="h5" gutterBottom>Infinote combines the benefits of journaling with the ease of using your own voice, yielding a truly unique note-taking experience.</Typography>
             </Container>
-            <Button className={classes.getStartedButton} size="large" variant="contained" component="label" color="primary">Get Started</Button>
+            <Button className={classes.getStartedButton} size="large" variant="contained" component="label" onClick={() => history.push("/alpha-sign-up")} color="primary">Get Started</Button>
             <Container>
                 <Paper className={classes.paper}>
                 <Grid container spacing={6}>
@@ -97,7 +99,7 @@ export default function Home() {
             <Typography className={classes.welcomeToInfinote} variant="h3" gutterBottom>Features planned for Beta:</Typography>
             <Container maxWidth="sm">
                 <Typography align="left" variant="h5" gutterBottom>1. Automatic speech to text transcription</Typography>
-                <Typography align="left" variant="h5" gutterBottom>2. Sign up with Google</Typography>
+                <Typography align="left" variant="h5" gutterBottom>2. Log in with Google</Typography>
                 <Typography align="left" variant="h5" gutterBottom>3. Record notes directly into the browser</Typography>
                 <Typography align="left"variant="h5" gutterBottom>4. Search bar</Typography>
                 <Typography align="left" variant="h5" gutterBottom>5. Tags for better organization</Typography>

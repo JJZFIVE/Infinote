@@ -30,6 +30,21 @@ function App() {
     setUsername(data);
   }
 
+  function FeedbackForm() {
+    useEffect(() => {
+      window.location.replace('https://forms.gle/cj7ToH5QzSQYJWJY8')
+    }, [])
+    return null;
+  }
+
+  function AlphaSignUp() {
+    useEffect(() => {
+      window.location.replace('https://forms.gle/ba4rrcYBdzZzECp98')
+    }, [])
+    return null;
+  }
+
+  
   return (
     <div className="App">
       <Router>
@@ -55,6 +70,12 @@ function App() {
             </Route>
             <Route path="/entries/:entry_id">
               <ViewEntry username={username}/>
+            </Route>
+            <Route exact path='/feedback' >
+              <FeedbackForm />
+            </Route>
+            <Route exact path="/alpha-sign-up">
+              <AlphaSignUp />
             </Route>
           </Switch>
         </Layout>

@@ -10,6 +10,7 @@ import AddIcon from '@material-ui/icons/Add';
 import DoneIcon from '@material-ui/icons/Done';
 import ClearIcon from '@material-ui/icons/Clear';
 import TextField from '@material-ui/core/TextField';
+import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles({
   textField: {
@@ -23,7 +24,6 @@ const useStyles = makeStyles({
 
 
 function Upload(props) {
-
   const classes = useStyles();
   const [logged] = useAuth();
   const history = useHistory();
@@ -103,13 +103,26 @@ function Upload(props) {
         if(myFile == null) {
           setFileError(true);
         }
+        if(filename == ""){
+          setNameError(true);
+        }
       }  
   }
 
   return (
     <div>
+      <Grid container direction="column" alignItems="center" justifyContent="center" style={{ minHeight: "80vh" }}>
+          <Typography variant="h3" color="primary">
+            Upload a File
+          </Typography>
+          <Typography variant="subtitle1" color='textSecondary'>
+              Only accepts mp3 for now
+          </Typography>
+          <br /> <br />
           {myFile == null ? 
+          
           <div>
+            
             {fileError ? 
             <Typography variant="subtitle1" color="error">* Must Select a File *</Typography>
             : <div />}
@@ -118,9 +131,11 @@ function Upload(props) {
             component="label"
             startIcon={<AddIcon />}>
             Select File
-            <input type="file" onChange={onFileChange} hidden /> 
+            <input type="file" onChange={onFileChange} hidden accept="audio/mp3"/> 
           </Button>
+          
           </div>
+          
           :
           <div>
           <Button onClick={deleteFile}><ClearIcon color="error"/></Button>
@@ -131,8 +146,11 @@ function Upload(props) {
             // Use classes to change this color to an OK green
             startIcon={<DoneIcon />}>
             File Selected
-            <input type="file" onChange={onFileChange} hidden /> 
+            <input type="file" onChange={onFileChange} hidden accept="audio/mp3"/> 
           </Button>
+          <Typography variant="subtitle1" color='textSecondary'>
+              {myFile ? myFile.name : <div />}
+          </Typography>
           </div>
           }
           
@@ -140,7 +158,6 @@ function Upload(props) {
           <input id="filename" type="text" onChange={onFilenameChange} />
           <label htmlFor="tags">(optional) Tags: </label>
           <input id="tags" type="text" onChange={} />*/}
-
           <form noValidate autoComplete="off">
             <TextField 
               className={classes.textField}
@@ -154,9 +171,10 @@ function Upload(props) {
             />
             <TextField 
               className={classes.textField}
-              label="Tags (optional)"
+              label="Tags (Coming in Beta)"
               variant="outlined"
               color="secondary"
+              disabled={true}
               value={tags}
               onChange={onTagsChange}
             />
@@ -167,6 +185,7 @@ function Upload(props) {
         <h3 id="warning-text"></h3>
         {fileUploaded ? <Typography variant="h5" color="primary">File Successfully Uploaded!</Typography> : <div />}
       </div>
+      </Grid>
     </div>
 
   );

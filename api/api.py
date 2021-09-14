@@ -89,14 +89,13 @@ def login():
 @app.route("/api/refresh", methods=["POST"])
 @flask_praetorian.auth_required
 def refresh():
-    print("refresh request")
     old_token = flask.request.get_data()
     new_token = guard.refresh_jwt_token(old_token)
     ret = {"access_token": new_token}
     return ret, 200
 
 
-@app.route("/get-entry-file/<username>/<entry_id>")
+@app.route("/api/get-entry-file/<username>/<entry_id>")
 @flask_praetorian.auth_required
 def get_entry_file(username, entry_id):
     user_id = search_for_user_by_username(username).id
@@ -113,13 +112,11 @@ def get_entries():
     # UNFINISHED
     # This DOES NOT PULL S3 bucket info. Only Mongo info. Only first 10? 20? 50? Think # of items/page
     req = flask.request.get_json(force=True)
-    print("YAYAYAYA", req)
     user = search_for_user_by_username(req["username"])
     entries = find_entries_for_user(user)
     # Convert entries to Python array for JSON serialization
     returned_entries = []
     for idx, entry in enumerate(entries):
-        print(f"{idx + 1}. {entry.name}")
         returned_entries.append(
             {
                 "id": str(entry.id),
@@ -161,7 +158,6 @@ def upload_entry_test(username, filename):
     uploaded_file = data["file"]
     # Get user id to pass to boto3
     user_id = search_for_user_by_username(username).id
-    print("user_id: ", user_id)
     # Must create new entry before upload to generate entry id
     entry = new_entry(user_id, filename)
     entry_id = entry.id
@@ -173,7 +169,7 @@ def upload_entry_test(username, filename):
     return {"response": status_code}, status_code
 
 
-@app.route("/get-user-email/<username>")
+@app.route("/api/get-user-email/<username>")
 @flask_praetorian.auth_required
 def get_user_settings(username):
     user = search_for_user_by_username(username)
@@ -182,7 +178,7 @@ def get_user_settings(username):
     return {"email": email, "firstname": firstname}, 200
 
 
-@app.route("/change-password/<username>", methods=["POST"])
+@app.route("/api/change-password/<username>", methods=["POST"])
 @flask_praetorian.auth_required
 def change_password(username):
     data = flask.request.get_json(force=True)
@@ -193,6 +189,39 @@ def change_password(username):
     user.save()
     return {"message": "Passsword changed successfully"}, 200
 
-    # Run the example
+
+@app.route("/api/email-check/<email>")
+def email_check(email):
+    user = User.objects(email=email).first()
+    if user:
+        return {"message": "exists"}, 409
+    else:
+        return {"message": "valid"}, 200
+
+
+@app.route("/api/username-check/<username>")
+def username_check(username):
+    user = User.objects(username=username).first()
+    if user:
+        return {"message": "exists"}, 409
+    else:
+        return {"message": "valid"}, 200
+
+
+@app.route("/api/get-entry-info-by-id/<id>")
+@flask_praetorian.auth_required
+def get_entry_info_by_id(id):
+    entry = Entry.objects(id=id).first()
+    return {"name": entry.name, "registeredDate": entry.registered_date}, 200
+
+
+@app.route("/api/get-firstname/<username>")
+@flask_praetorian.auth_required
+def get_firstname(username):
+    user = User.objects(username=username).first()
+    return {"firstname": user.firstname}, 200
+
+
+# Run the example
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
