@@ -46,6 +46,7 @@ def create_jwt_token(user):
 # Api Routes
 @app.route("/api/delete-user/<username>", methods=["POST"])
 @flask_praetorian.auth_required
+@flask_cors.cross_origin()
 def delete_user(username):
     del_user = User.objects(username=username).first()
     if del_user:
@@ -56,6 +57,7 @@ def delete_user(username):
 
 
 @app.route("/api/sign_up", methods=["POST"])
+@flask_cors.cross_origin()
 def sign_up():
     req = flask.request.get_json(force=True)
     firstname = req.get("firstname", None)
@@ -77,6 +79,7 @@ def sign_up():
 
 
 @app.route("/api/login", methods=["POST"])
+@flask_cors.cross_origin()
 def login():
     req = flask.request.get_json(force=True)
     # Expand to ability to sign in with email as well
@@ -88,6 +91,7 @@ def login():
 
 
 @app.route("/api/refresh", methods=["POST"])
+@flask_cors.cross_origin()
 @flask_praetorian.auth_required
 def refresh():
     old_token = flask.request.get_data()
@@ -97,6 +101,7 @@ def refresh():
 
 
 @app.route("/api/get-entry-file/<username>/<entry_id>")
+@flask_cors.cross_origin()
 @flask_praetorian.auth_required
 def get_entry_file(username, entry_id):
     user_id = search_for_user_by_username(username).id
@@ -108,6 +113,7 @@ def get_entry_file(username, entry_id):
 
 
 @app.route("/api/get-entries", methods=["POST"])
+@flask_cors.cross_origin()
 @flask_praetorian.auth_required
 def get_entries():
     # UNFINISHED
@@ -130,6 +136,7 @@ def get_entries():
 
 
 @ app.route("/api/delete-entry", methods=["DELETE"])
+@flask_cors.cross_origin()
 @flask_praetorian.auth_required
 def delete_entry():
     # Takes entry id, which is stored in id tag of a delete button on the screen
@@ -152,6 +159,7 @@ def delete_entry():
 
 
 @app.route("/api/upload-entry/<username>/<filename>", methods=["POST"])
+@flask_cors.cross_origin()
 @flask_praetorian.auth_required
 def upload_entry_test(username, filename):
     # Get the uploaded file in bytes format
@@ -171,6 +179,7 @@ def upload_entry_test(username, filename):
 
 
 @app.route("/api/get-user-email/<username>")
+@flask_cors.cross_origin()
 @flask_praetorian.auth_required
 def get_user_settings(username):
     user = search_for_user_by_username(username)
@@ -180,6 +189,7 @@ def get_user_settings(username):
 
 
 @app.route("/api/change-password/<username>", methods=["POST"])
+@flask_cors.cross_origin()
 @flask_praetorian.auth_required
 def change_password(username):
     data = flask.request.get_json(force=True)
@@ -192,6 +202,7 @@ def change_password(username):
 
 
 @app.route("/api/email-check/<email>")
+@flask_cors.cross_origin()
 def email_check(email):
     user = User.objects(email=email).first()
     if user:
@@ -201,6 +212,7 @@ def email_check(email):
 
 
 @app.route("/api/username-check/<username>")
+@flask_cors.cross_origin()
 def username_check(username):
     user = User.objects(username=username).first()
     if user:
@@ -210,6 +222,7 @@ def username_check(username):
 
 
 @app.route("/api/get-entry-info-by-id/<id>")
+@flask_cors.cross_origin()
 @flask_praetorian.auth_required
 def get_entry_info_by_id(id):
     entry = Entry.objects(id=id).first()
@@ -217,6 +230,7 @@ def get_entry_info_by_id(id):
 
 
 @app.route("/api/get-firstname/<username>")
+@flask_cors.cross_origin()
 @flask_praetorian.auth_required
 def get_firstname(username):
     user = User.objects(username=username).first()
@@ -225,4 +239,4 @@ def get_firstname(username):
 
 # Run the example
 if __name__ == "__main__":
-    app.run(host="0.0.0.0")
+    app.run()
