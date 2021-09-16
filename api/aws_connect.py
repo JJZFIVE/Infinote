@@ -1,5 +1,5 @@
 import boto3
-from models import User, Entry
+from .models import User, Entry
 
 # Setup boto3 client
 ACCESS_KEY = "AKIAX6C2X4DBYI5XFIXQ"

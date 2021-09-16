@@ -1,4 +1,4 @@
-from models import User, Entry, UserForJWTToken
+from .models import User, Entry, UserForJWTToken
 import datetime
 
 

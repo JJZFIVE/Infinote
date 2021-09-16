@@ -5,17 +5,17 @@ import boto3
 import flask_cors
 import mongoengine
 import json
-from aws_connect import boto3_get_file, boto3_put_file, boto3_delete_file, client
-from models import User, Entry, UserForJWTToken
-from db_functions import (create_new_user, search_for_user_by_username, update_user,
-                          find_entries_for_user, get_entry, search_for_user_by_id, new_entry, change_entry_tags, delete_entry_tags)
+from api.aws_connect import boto3_get_file, boto3_put_file, boto3_delete_file, client
+from api.models import User, Entry, UserForJWTToken
+from api.db_functions import (create_new_user, search_for_user_by_username, update_user,
+                              find_entries_for_user, get_entry, search_for_user_by_id, new_entry, change_entry_tags, delete_entry_tags)
 
 # Passport is a node package API that deals with login/signup stuff. passport-google-oath-2.0
 
 # Activating virtual environment: source .venv/bin/activate
 # IMPORTANT: HASH PASSWORD BEFORE PASSING INTO CREATE_NEW_USER FUNCTION
 
-app = flask.Flask(__name__, static_folder='../frontend/build',
+app = flask.Flask(__name__, static_folder='/frontend/build',
                   static_url_path='')
 guard = flask_praetorian.Praetorian()
 app.config["SECRET_KEY"] = "top secret"
