@@ -42,6 +42,9 @@ def create_jwt_token(user):
         del jwt_user
         return ret
 
+@app.route("/")
+def main():
+    return {"message": "hello world"}
 
 # Api Routes
 @app.route("/api/delete-user/<username>", methods=["POST"])
