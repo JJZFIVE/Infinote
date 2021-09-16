@@ -42,11 +42,14 @@ def create_jwt_token(user):
         del jwt_user
         return ret
 
+
 @app.route("/")
 def main():
     return {"message": "hello world"}
 
 # Api Routes
+
+
 @app.route("/api/delete-user/<username>", methods=["POST"])
 @flask_praetorian.auth_required
 @flask_cors.cross_origin()
