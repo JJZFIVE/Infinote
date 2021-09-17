@@ -1,1 +1,1 @@
-web: gunicorn apifile:app && cd frontend && npm start
+web: cd frontend && npm start
